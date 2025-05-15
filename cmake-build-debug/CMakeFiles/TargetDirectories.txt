@@ -1,3 +1,0 @@
-C:/Users/vdoro/CLionProjects/Custom/cmake-build-debug/CMakeFiles/Custom.dir
-C:/Users/vdoro/CLionProjects/Custom/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/vdoro/CLionProjects/Custom/cmake-build-debug/CMakeFiles/rebuild_cache.dir
