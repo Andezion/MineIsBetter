@@ -24,6 +24,7 @@ public:
     T& operator[](size_t index);
     const T& operator[](size_t index) const;
 
+
     void resize(size_t new_size, const T& value = T());
     [[nodiscard]] size_t size() const;
     [[nodiscard]] size_t capacity() const;
