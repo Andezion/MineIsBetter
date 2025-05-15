@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits> // for max_size
 #include <stdexcept> // for throw
 #include <utility> // for move
 
@@ -23,11 +24,14 @@ public:
 
     T& operator[](size_t index);
     const T& operator[](size_t index) const;
-
+    T& at(size_t index);
+    T& back();
+    T& front();
 
     void resize(size_t new_size, const T& value = T());
     [[nodiscard]] size_t size() const;
     [[nodiscard]] size_t capacity() const;
+    [[nodiscard]] static size_t max_size();
 
     [[nodiscard]] bool empty() const;
     void clear();
@@ -48,6 +52,12 @@ template<typename T>
 size_t vector<T>::capacity() const
 {
     return capacity_of_vector;
+}
+
+template<typename T>
+size_t vector<T>::max_size()
+{
+    return std::numeric_limits<size_t>::max();
 }
 
 template<typename T>
@@ -114,7 +124,7 @@ void vector<T>::push_back(T value)
         T * new_data = new T[capacity_of_vector];
         for(int i = 0; i < size_of_vector; i++)
         {
-            new_data[i] = data[i];
+            new_data[i] = std::move(data[i]);
         }
 
         delete[] data;
@@ -185,6 +195,29 @@ const T &vector<T>::operator[](size_t index) const
 }
 
 template<typename T>
+T & vector<T>::at(size_t index)
+{
+    if(index >= size_of_vector)
+    {
+        throw std::out_of_range("Index out of range");
+    }
+
+    return *(data + index);
+}
+
+template<typename T>
+T & vector<T>::back()
+{
+    return *(data + size_of_vector - 1);
+}
+
+template<typename T>
+T & vector<T>::front()
+{
+    return *data;
+}
+
+template<typename T>
 void vector<T>::resize(const size_t new_size, const T& value)
 {
     if(new_size < size_of_vector)
@@ -198,7 +231,7 @@ void vector<T>::resize(const size_t new_size, const T& value)
             reserve(new_size);
         }
 
-        for(int i = size_of_vector; i < new_size; i++)
+        for(size_t i = size_of_vector; i < new_size; i++)
         {
             data[i] = value;
         }
