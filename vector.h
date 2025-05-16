@@ -159,7 +159,7 @@ void vector<T>::emplace_back(T value)
             new_capacity = capacity_of_vector * 2;
         }
 
-        T* new_data = new T[new_capacity];
+        T * new_data = new T[new_capacity];
 
         for (size_t i = 0; i < size_of_vector; i++)
         {
