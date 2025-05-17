@@ -25,6 +25,7 @@ public:
 
     void swap(stack<T> & other) noexcept;
     T & top();
+    const T & top() const;
 
     stack<T> & operator=(const stack<T> & other);
     stack<T> & operator=(stack<T> && other) noexcept;
@@ -174,6 +175,13 @@ template<typename T>
 T & stack<T>::top()
 {
     if (empty()) throw std::runtime_error("Stack is empty");
+    return data[size_of_stack - 1];
+}
+
+template<typename T>
+const T & stack<T>::top() const
+{
+    if(empty()) throw std::runtime_error("Stack is empty");
     return data[size_of_stack - 1];
 }
 
