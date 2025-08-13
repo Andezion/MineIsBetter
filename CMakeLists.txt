@@ -8,4 +8,5 @@ include_directories(.)
 add_executable(MineIsBetter
     main.cpp
     vector.h
-        stack.h)
+        stack.h
+        array.h)

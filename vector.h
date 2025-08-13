@@ -1,8 +1,8 @@
 #pragma once
 
-#include <limits> // for max_size
-#include <stdexcept> // for throw
-#include <utility> // for move
+#include <limits>
+#include <stdexcept>
+#include <utility>
 
 template<typename T>
 class vector
@@ -14,7 +14,7 @@ class vector
 public:
     vector();
     explicit vector(size_t size);
-    vector(size_t size, const T & value);
+    vector(size_t size, const T& value);
 
     ~vector();
 
@@ -23,7 +23,7 @@ public:
     void emplace_back(T value);
 
     T& operator[](size_t index);
-    const T& operator[](size_t index) const;
+    const T & operator[](size_t index) const;
     T& at(size_t index);
     T& back();
     T& front();
@@ -38,8 +38,8 @@ public:
 
     void reserve(size_t new_capacity);
 
-    T * begin();
-    T * end();
+    T* begin();
+    T* end();
 };
 
 template<typename T>
@@ -96,13 +96,13 @@ void vector<T>::reserve(const size_t new_capacity)
 }
 
 template<typename T>
-T * vector<T>::begin()
+T* vector<T>::begin()
 {
     return data;
 }
 
 template<typename T>
-T *vector<T>::end()
+T* vector<T>::end()
 {
     return data + size_of_vector;
 }
@@ -175,7 +175,7 @@ void vector<T>::emplace_back(T value)
 }
 
 template<typename T>
-T &vector<T>::operator[](size_t index)
+T& vector<T>::operator[](size_t index)
 {
     if(index >= size_of_vector)
     {
@@ -185,7 +185,7 @@ T &vector<T>::operator[](size_t index)
 }
 
 template<typename T>
-const T &vector<T>::operator[](size_t index) const
+const T& vector<T>::operator[](size_t index) const
 {
     if(index >= size_of_vector)
     {
@@ -195,7 +195,7 @@ const T &vector<T>::operator[](size_t index) const
 }
 
 template<typename T>
-T & vector<T>::at(size_t index)
+T& vector<T>::at(size_t index)
 {
     if(index >= size_of_vector)
     {
@@ -206,13 +206,13 @@ T & vector<T>::at(size_t index)
 }
 
 template<typename T>
-T & vector<T>::back()
+T& vector<T>::back()
 {
     return *(data + size_of_vector - 1);
 }
 
 template<typename T>
-T & vector<T>::front()
+T& vector<T>::front()
 {
     return *data;
 }
@@ -257,7 +257,7 @@ vector<T>::vector(const size_t size)
 }
 
 template<typename T>
-vector<T>::vector(const size_t size, const T &value)
+vector<T>::vector(const size_t size, const T& value)
 {
     data = new T[size];
     size_of_vector = size;
