@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure
+      run: cmake -B build -S . -DCMAKE_CXX_STANDARD=14
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Run program
+      run: ./build/MineIsBetter
