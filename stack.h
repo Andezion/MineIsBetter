@@ -70,6 +70,11 @@ stack<T>::~stack()
 {
     if(data != nullptr)
     {
+        for (size_t i = 0; i < size_of_stack; i++)
+        {
+            data[i].~T();
+        }
+
         delete[] data;
 
         data = nullptr;
@@ -115,6 +120,7 @@ void stack<T>::pop()
     }
 
     size_of_stack--;
+    data[size_of_stack].~T();
 }
 
 template<typename T>
@@ -122,19 +128,9 @@ void stack<T>::emplace(T value)
 {
     if (size_of_stack >= capacity_of_stack)
     {
-        size_t new_capacity;
-        if (capacity_of_stack == 0)
-        {
-            new_capacity = 1;
-        }
-        else
-        {
-            new_capacity = capacity_of_stack * 2;
-        }
-
+        const size_t new_capacity = (capacity_of_stack == 0) ? 1 : capacity_of_stack * 2;
         T * new_data = new T[new_capacity];
-
-        for (size_t i = 0; i < size_of_stack; i++)
+        for(int i = 0; i < size_of_stack; i++)
         {
             new_data[i] = std::move(data[i]);
         }
@@ -143,8 +139,34 @@ void stack<T>::emplace(T value)
         data = new_data;
         capacity_of_stack = new_capacity;
     }
-    data[size_of_stack] = std::move(value);
+    new(&data[size_of_stack]) T(value);
     size_of_stack++;
+
+    // if (size_of_stack >= capacity_of_stack)
+    // {
+    //     size_t new_capacity;
+    //     if (capacity_of_stack == 0)
+    //     {
+    //         new_capacity = 1;
+    //     }
+    //     else
+    //     {
+    //         new_capacity = capacity_of_stack * 2;
+    //     }
+    //
+    //     T * new_data = new T[new_capacity];
+    //
+    //     for (size_t i = 0; i < size_of_stack; i++)
+    //     {
+    //         new_data[i] = std::move(data[i]);
+    //     }
+    //
+    //     delete[] data;
+    //     data = new_data;
+    //     capacity_of_stack = new_capacity;
+    // }
+    // data[size_of_stack] = std::move(value);
+    // size_of_stack++;
 }
 
 template<typename T>
@@ -199,13 +221,32 @@ stack<T> & stack<T>::operator=(const stack<T> &other)
 template<typename T>
 stack<T> & stack<T>::operator=(stack<T> && other) noexcept
 {
-    data = other.data;
-    size_of_stack = other.size_of_stack;
-    capacity_of_stack = other.capacity_of_stack;
+    if (this != &other)
+    {
+        for (size_t i = 0; i < size_of_stack; i++)
+        {
+            data[i].~T();
+        }
+        delete[] data;
 
-    other.data = nullptr;
-    other.size_of_stack = 0;
-    other.capacity_of_stack = 0;
+        data = other.data;
+        size_of_stack = other.size_of_stack;
+        capacity_of_stack = other.capacity_of_stack;
 
+        other.data = nullptr;
+        other.size_of_stack = 0;
+        other.capacity_of_stack = 0;
+    }
     return *this;
+    // data = other.data;
+    // size_of_stack = other.size_of_stack;
+    // capacity_of_stack = other.capacity_of_stack;
+    //
+    // other.data = nullptr;
+    // other.size_of_stack = 0;
+    // other.capacity_of_stack = 0;
+    //
+    // return *this;
 }
+
+
