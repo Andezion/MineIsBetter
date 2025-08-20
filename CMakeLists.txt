@@ -10,4 +10,5 @@ add_executable(MineIsBetter
     vector.h
         stack.h
         array.h
-        algorithm.h)
+        algorithm.h
+        list.h)
