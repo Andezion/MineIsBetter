@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <limits>
 #include <stdexcept>
 
 template<typename T>
