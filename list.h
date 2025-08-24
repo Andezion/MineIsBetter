@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdexcept>
 
 template<typename T>
@@ -12,11 +13,9 @@ class list
         explicit Node(const T& v, Node* p=nullptr, Node* n=nullptr)
             : value(v), prev(p), next(n) {}
     };
-
     Node* head;
     Node* tail;
     size_t size_of_list;
-
 public:
     list();
     explicit list(size_t size);
@@ -242,7 +241,8 @@ template<typename T>
 list<T>::~list()
 {
     Node* cur = head;
-    while (cur) {
+    while (cur)
+    {
         Node* next = cur->next;
         delete cur;
         cur = next;
