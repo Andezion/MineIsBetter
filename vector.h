@@ -175,6 +175,8 @@ T * vector<T>::data() const noexcept
     return storage;
 }
 
+
+
 template<typename T>
 bool vector<T>::empty() const noexcept
 {
@@ -213,6 +215,68 @@ T & vector<T>::operator[](size_t index) const
     return *(storage + index);
 }
 
+
+template<typename T>
+void vector<T>::pop_back()
+{
+    if (size_of_vector == 0)
+    {
+        throw std::out_of_range("Vector is empty");
+    }
+    storage[size_of_vector - 1].~T();
+    size_of_vector--;
+}
+
+template<typename T>
+void vector<T>::push_back(const T &value)
+{
+    if (size_of_vector >= capacity_of_vector)
+    {
+        if (capacity_of_vector == 0)
+        {
+            capacity_of_vector = 1;
+        }
+        else
+        {
+            capacity_of_vector = capacity_of_vector * 2;
+        }
+
+        T * new_storage = new T[capacity_of_vector];
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = storage[i];
+        }
+        delete[] storage;
+        storage = new_storage;
+    }
+    storage[size_of_vector++] = value;
+}
+
+template<typename T>
+void vector<T>::push_back(T &&value)
+{
+    if (size_of_vector >= capacity_of_vector)
+    {
+        if (capacity_of_vector == 0)
+        {
+            capacity_of_vector = 1;
+        }
+        else
+        {
+            capacity_of_vector = capacity_of_vector * 2;
+        }
+
+        T * new_storage = new T[capacity_of_vector];
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = storage[i];
+        }
+        delete[] storage;
+        storage = new_storage;
+    }
+    storage[size_of_vector++] = std::move(value);
+}
+
 template<typename T>
 const T * vector<T>::rbegin() const noexcept
 {
@@ -245,6 +309,14 @@ template<typename T>
 size_t vector<T>::size() const noexcept
 {
     return size_of_vector;
+}
+
+template<typename T>
+void vector<T>::swap(vector &other)
+{
+    std::swap(storage, other.storage);
+    std::swap(size_of_vector, other.size_of_vector);
+    std::swap(capacity_of_vector, other.capacity_of_vector);
 }
 
 
