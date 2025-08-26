@@ -59,7 +59,7 @@ public:
     void resize(size_t new_size, const T& value);
     void shrink_to_fit();
     size_t size() const noexcept;
-    void swap(vector& other);
+    void swap(vector& other) noexcept;
 };
 
 template<typename T>
@@ -175,7 +175,79 @@ T * vector<T>::data() const noexcept
     return storage;
 }
 
+template<typename T>
+T* vector<T>::emplace(const T* position, const T& value)
+{
+    size_t pos_index = position - storage;
 
+    if (size_of_vector >= capacity_of_vector)
+    {
+        if (capacity_of_vector == 0)
+        {
+            capacity_of_vector = 1;
+        }
+        else
+        {
+            capacity_of_vector = capacity_of_vector * 2;
+        }
+        T* new_storage = new T[capacity_of_vector];
+
+        for (size_t i = 0; i < pos_index; i++)
+        {
+            new_storage[i] = storage[i];
+        }
+
+        new_storage[pos_index] = value;
+
+        for (size_t i = pos_index; i < size_of_vector; ++i)
+        {
+            new_storage[i + 1] = storage[i];
+        }
+
+        delete[] storage;
+        storage = new_storage;
+    }
+    else
+    {
+        for (size_t i = size_of_vector; i > pos_index; i--)
+        {
+            storage[i] = storage[i - 1];
+        }
+
+        storage[pos_index] = value;
+    }
+
+    ++size_of_vector;
+    return storage + pos_index;
+}
+
+
+
+template<typename T>
+T * vector<T>::emplace_back(const T &value)
+{
+    if (size_of_vector >= capacity_of_vector)
+    {
+        if (capacity_of_vector == 0)
+        {
+            capacity_of_vector = 1;
+        }
+        else
+        {
+            capacity_of_vector = capacity_of_vector * 2;
+        }
+
+        T * new_storage = new T[capacity_of_vector];
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = storage[i];
+        }
+        delete[] storage;
+        storage = new_storage;
+    }
+    storage[size_of_vector++] = value;
+    return &storage[size_of_vector - 1];
+}
 
 template<typename T>
 bool vector<T>::empty() const noexcept
@@ -312,7 +384,7 @@ size_t vector<T>::size() const noexcept
 }
 
 template<typename T>
-void vector<T>::swap(vector &other)
+void vector<T>::swap(vector &other) noexcept
 {
     std::swap(storage, other.storage);
     std::swap(size_of_vector, other.size_of_vector);
