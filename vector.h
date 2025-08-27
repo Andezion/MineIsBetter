@@ -38,7 +38,6 @@ public:
     T* erase(T* first, T* last);
     T* erase(T* first);
     T& front() const;
-    T* get_allocator() const noexcept;
     T* insert(size_t index, const T& value);
     T* insert(size_t index, const T* first, const T* last);
     T* insert(size_t index, std::initializer_list<T> list);
@@ -105,6 +104,22 @@ vector<T>::~vector()
         size_of_vector = 0;
         capacity_of_vector = 0;
     }
+}
+
+template<typename T>
+void vector<T>::assign(const size_t size, const T &value)
+{
+    delete[] storage;
+
+    storage = new T[size];
+
+    for (size_t i = 0; i < size; i++)
+    {
+        storage[i] = value;
+    }
+
+    size_of_vector = size;
+    capacity_of_vector = size;
 }
 
 template<typename T>
@@ -270,6 +285,47 @@ T & vector<T>::front() const
     }
     return storage[0];
 }
+
+template<typename T>
+T* vector<T>::insert(size_t index, const T& value)
+{
+    if (index > size_of_vector) {
+        throw std::out_of_range("Index out of range");
+    }
+
+    if (size_of_vector >= capacity_of_vector)
+    {
+        if (capacity_of_vector == 0)
+        {
+            capacity_of_vector = 1;
+        }
+        else
+        {
+            capacity_of_vector = capacity_of_vector * 2;
+        }
+    }
+
+    T * new_storage = new T[capacity_of_vector];
+
+    for (size_t i = 0; i < index; i++)
+    {
+        new_storage[i] = storage[i];
+    }
+
+    new_storage[index] = value;
+
+    for (size_t i = index; i < size_of_vector; i++)
+    {
+        new_storage[i + 1] = storage[i];
+    }
+
+    delete[] storage;
+    storage = new_storage;
+    ++size_of_vector;
+
+    return &storage[index];
+}
+
 
 template<typename T>
 size_t vector<T>::max_size() noexcept
