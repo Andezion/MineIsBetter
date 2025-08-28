@@ -19,8 +19,8 @@ public:
     ~vector();
 
     void assign(size_t size, const T& value);
-    void assing(T* first, T* last);
-    void assing(std::initializer_list<T> list);
+    void assign(T* first, T* last);
+    void assign(std::initializer_list<T> list);
     const T& at(size_t index) const;
     const T& back() const;
     T* begin() const noexcept;
@@ -121,6 +121,42 @@ void vector<T>::assign(const size_t size, const T &value)
     size_of_vector = size;
     capacity_of_vector = size;
 }
+
+template<typename T>
+void vector<T>::assign(T *first, T *last)
+{
+    const size_t n = last - first;
+
+    delete[] storage;
+    storage = new T[n];
+
+    for (size_t i = 0; i < n; i++)
+    {
+        storage[i] = first[i];
+    }
+
+    size_of_vector = n;
+    capacity_of_vector = n;
+}
+
+template<typename T>
+void vector<T>::assign(std::initializer_list<T> list)
+{
+    const size_t n = list.size();
+
+    delete[] storage;
+    storage = new T[n];
+
+    size_t i = 0;
+    for (const T& val : list)
+    {
+        storage[i++] = val;
+    }
+
+    size_of_vector = n;
+    capacity_of_vector = n;
+}
+
 
 template<typename T>
 const T & vector<T>::at(size_t index) const
@@ -416,6 +452,49 @@ const T * vector<T>::rend() const noexcept
 {
     return storage;
 }
+
+template<typename T>
+void vector<T>::reserve(const size_t new_capacity)
+{
+    if (new_capacity > capacity_of_vector)
+    {
+        T* new_storage = new T[new_capacity];
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = std::move(storage[i]);
+        }
+        delete[] storage;
+        storage = new_storage;
+        capacity_of_vector = new_capacity;
+    }
+}
+
+template<typename T>
+void vector<T>::resize(const size_t new_size)
+{
+    if (new_size > capacity_of_vector)
+    {
+        const size_t new_capacity = std::max(new_size, capacity_of_vector * 2);
+        T* new_storage = new T[new_capacity];
+
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = std::move(storage[i]);
+        }
+
+        delete[] storage;
+        storage = new_storage;
+        capacity_of_vector = new_capacity;
+    }
+
+    for (size_t i = size_of_vector; i < new_size; i++)
+    {
+        storage[i] = T{};
+    }
+
+    size_of_vector = new_size;
+}
+
 
 template<typename T>
 void vector<T>::shrink_to_fit()
