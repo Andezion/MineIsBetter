@@ -46,7 +46,7 @@ public:
     static size_t max_size() noexcept;
     T& operator[](size_t index) const;
     vector& operator=(const vector& other);
-    vector& operator=(vector&& other);
+    vector& operator=(vector&& other) noexcept;
     vector& operator=(std::initializer_list<T> list);
     void pop_back();
     void push_back(const T& value);
@@ -379,6 +379,39 @@ T & vector<T>::operator[](size_t index) const
     return *(storage + index);
 }
 
+template<typename T>
+vector<T> & vector<T>::operator=(const vector &other)
+{
+    if (this != &other)
+    {
+        clear();
+        reserve(other.size_of_vector);
+        for (size_t i = 0; i < other.size_of_vector; i++)
+        {
+            push_back(other[i]);
+        }
+    }
+    return *this;
+}
+
+template<typename T>
+vector<T> & vector<T>::operator=(vector &&other)
+ noexcept {
+    if (this != &other)
+    {
+        delete[] storage;
+
+        storage = other.storage;
+        size_of_vector = other.size_of_vector;
+        capacity_of_vector = other.capacity_of_vector;
+
+        other.storage = nullptr;
+        other.size_of_vector = 0;
+        other.capacity_of_vector = 0;
+    }
+    return *this;
+}
+
 
 template<typename T>
 void vector<T>::pop_back()
@@ -490,6 +523,31 @@ void vector<T>::resize(const size_t new_size)
     for (size_t i = size_of_vector; i < new_size; i++)
     {
         storage[i] = T{};
+    }
+
+    size_of_vector = new_size;
+}
+
+template<typename T>
+void vector<T>::resize(size_t new_size, const T &value)
+{
+    if (new_size > capacity_of_vector)
+    {
+        const size_t new_capacity = std::max(new_size, capacity_of_vector * 2);
+        T* new_storage = new T[new_capacity];
+
+        for (size_t i = 0; i < size_of_vector; i++)
+        {
+            new_storage[i] = std::move(storage[i]);
+        }
+        delete[] storage;
+        storage = new_storage;
+        capacity_of_vector = new_capacity;
+    }
+
+    for (size_t i = size_of_vector; i < new_size; i++)
+    {
+        storage[i] = value;
     }
 
     size_of_vector = new_size;
