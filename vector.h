@@ -325,7 +325,8 @@ T & vector<T>::front() const
 template<typename T>
 T* vector<T>::insert(size_t index, const T& value)
 {
-    if (index > size_of_vector) {
+    if (index > size_of_vector)
+    {
         throw std::out_of_range("Index out of range");
     }
 
@@ -360,6 +361,48 @@ T* vector<T>::insert(size_t index, const T& value)
     ++size_of_vector;
 
     return &storage[index];
+}
+
+template<typename T>
+T* vector<T>::insert(size_t index, std::initializer_list<T> list)
+{
+    if (index > size_of_vector)
+    {
+        throw std::out_of_range("Index out of range");
+    }
+
+    const size_t new_size = size_of_vector + list.size();
+    if (new_size > capacity_of_vector)
+    {
+        while (capacity_of_vector < new_size)
+        {
+            capacity_of_vector = (capacity_of_vector == 0) ? 1 : capacity_of_vector * 2;
+        }
+    }
+
+    T* new_storage = new T[capacity_of_vector];
+
+    for (size_t i = 0; i < index; i++)
+    {
+        new_storage[i] = storage[i];
+    }
+
+    size_t pos = index;
+    for (const auto& elem : list)
+    {
+        new_storage[pos++] = elem;
+    }
+
+    for (size_t i = index; i < size_of_vector; i++)
+    {
+        new_storage[pos++] = storage[i];
+    }
+
+    delete[] storage;
+    storage = new_storage;
+    size_of_vector = new_size;
+
+    return storage + index;
 }
 
 
@@ -409,6 +452,24 @@ vector<T> & vector<T>::operator=(vector &&other)
         other.size_of_vector = 0;
         other.capacity_of_vector = 0;
     }
+    return *this;
+}
+
+template<typename T>
+vector<T> & vector<T>::operator=(std::initializer_list<T> list)
+{
+    delete[] storage;
+
+    capacity_of_vector = list.size();
+    size_of_vector = list.size();
+    storage = new T[capacity_of_vector];
+
+    size_t i = 0;
+    for (const auto& elem : list)
+    {
+        storage[i++] = elem;
+    }
+
     return *this;
 }
 
