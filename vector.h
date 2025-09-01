@@ -364,6 +364,63 @@ T* vector<T>::insert(size_t index, const T& value)
 }
 
 template<typename T>
+T* vector<T>::insert(size_t index, const T* first, const T* last)
+{
+    if (index > size_of_vector)
+    {
+        throw std::out_of_range("Index out of range");
+    }
+
+    const size_t count = last - first;
+    const size_t new_size = size_of_vector + count;
+
+    if (new_size > capacity_of_vector)
+    {
+        while (capacity_of_vector < new_size)
+        {
+            capacity_of_vector = (capacity_of_vector == 0) ? 1 : capacity_of_vector * 2;
+        }
+
+        T* new_storage = new T[capacity_of_vector];
+
+        for (size_t i = 0; i < index; i++)
+        {
+            new_storage[i] = std::move(storage[i]);
+        }
+
+        size_t pos = index;
+        while (first != last)
+        {
+            new_storage[pos++] = *first++;
+        }
+
+        for (size_t i = index; i < size_of_vector; i++)
+        {
+            new_storage[pos++] = std::move(storage[i]);
+        }
+
+        delete[] storage;
+        storage = new_storage;
+    }
+    else
+    {
+        for (size_t i = size_of_vector; i > index; i--)
+        {
+            storage[i + count - 1] = std::move(storage[i - 1]);
+        }
+
+        for (size_t i = 0; i < count; i++)
+        {
+            storage[index + i] = first[i];
+        }
+    }
+
+    size_of_vector = new_size;
+    return storage + index;
+}
+
+
+template<typename T>
 T* vector<T>::insert(size_t index, std::initializer_list<T> list)
 {
     if (index > size_of_vector)
@@ -403,6 +460,48 @@ T* vector<T>::insert(size_t index, std::initializer_list<T> list)
     size_of_vector = new_size;
 
     return storage + index;
+}
+
+template<typename T>
+T* vector<T>::insert(size_t index, T&& value)
+{
+    if (index > size_of_vector)
+    {
+        throw std::out_of_range("Index out of range");
+    }
+
+    if (size_of_vector >= capacity_of_vector)
+    {
+        capacity_of_vector = (capacity_of_vector == 0) ? 1 : capacity_of_vector * 2;
+
+        T* new_storage = new T[capacity_of_vector];
+
+        for (size_t i = 0; i < index; i++)
+        {
+            new_storage[i] = std::move(storage[i]);
+        }
+
+        new_storage[index] = std::move(value);
+
+        for (size_t i = index; i < size_of_vector; i++)
+        {
+            new_storage[i + 1] = std::move(storage[i]);
+        }
+
+        delete[] storage;
+        storage = new_storage;
+    }
+    else
+    {
+        for (size_t i = size_of_vector; i > index; --i)
+        {
+            storage[i] = std::move(storage[i - 1]);
+        }
+        storage[index] = std::move(value);
+    }
+
+    ++size_of_vector;
+    return &storage[index];
 }
 
 
