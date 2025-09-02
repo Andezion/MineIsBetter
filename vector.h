@@ -313,6 +313,31 @@ T * vector<T>::end() const noexcept
 }
 
 template<typename T>
+T* vector<T>::erase(T* first, T* last)
+{
+    if (first < storage || last > storage + size_of_vector || first > last)
+    {
+        throw std::out_of_range("Invalid erase range");
+    }
+
+    const size_t erase_count = last - first;
+    T* new_end = first;
+
+    for (T* p = last; p < storage + size_of_vector; ++p, ++new_end) {
+        *new_end = std::move(*p);
+    }
+
+    size_of_vector -= erase_count;
+    return first;
+}
+
+template<typename T>
+T* vector<T>::erase(T* first)
+{
+    return erase(first, first + 1);
+}
+
+template<typename T>
 T & vector<T>::front() const
 {
     if (size_of_vector == 0)
