@@ -31,6 +31,10 @@ public:
     void assign(std::initializer_list<T> init);
     void assign(size_t size, const T& value);
     void assign(T* first, T* last);
+    T& back();
+
+    T &back() const;
+    T* begin() const noexcept;
 
     ~list();
 };
@@ -235,6 +239,32 @@ void list<T>::assign(T *first, T *last)
         this->tail = nullptr;
         this->size_of_list = 0;
     }
+}
+
+template<typename T>
+T & list<T>::back()
+{
+    if (size_of_list == 0)
+    {
+        throw std::out_of_range("list::back");
+    }
+    return tail->value;
+}
+
+template<typename T>
+T &list<T>::back() const
+{
+    if (size_of_list == 0)
+    {
+        throw std::out_of_range("list::back");
+    }
+    return tail->value;
+}
+
+template<typename T>
+T * list<T>::begin() const noexcept
+{
+    return &(head->value);
 }
 
 template<typename T>
