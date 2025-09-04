@@ -17,6 +17,17 @@ class list
     Node* tail;
     size_t size_of_list;
 public:
+    struct const_iterator
+    {
+        const Node* current;
+
+        explicit const_iterator(const Node* p = nullptr) : current(p) {}
+
+        const T& operator*() const noexcept { return current->value; }
+        const_iterator& operator++() noexcept { current = current->next; return *this; }
+        bool operator!=(const const_iterator& other) const noexcept { return current != other.current; }
+    };
+
     list();
     explicit list(size_t size);
     list(const list& other);
@@ -32,9 +43,10 @@ public:
     void assign(size_t size, const T& value);
     void assign(T* first, T* last);
     T& back();
-
     T &back() const;
     T* begin() const noexcept;
+    const T* cbegin() const noexcept;
+    const T* cend() const noexcept;
 
     ~list();
 };
@@ -265,6 +277,18 @@ template<typename T>
 T * list<T>::begin() const noexcept
 {
     return &(head->value);
+}
+
+template<typename T>
+const T * list<T>::cbegin() const noexcept
+{
+    return const_iterator(head);
+}
+
+template<typename T>
+const T * list<T>::cend() const noexcept
+{
+    return const_iterator(nullptr);
 }
 
 template<typename T>
