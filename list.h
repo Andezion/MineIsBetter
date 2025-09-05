@@ -47,6 +47,14 @@ public:
     T* begin() const noexcept;
     const T* cbegin() const noexcept;
     const T* cend() const noexcept;
+    void clear() noexcept;
+    const T* crbegin() const noexcept;
+    const T* crend() const noexcept;
+    T* emplace(const T* position, const T& value);
+    void emplace_back(const T& value);
+    void emplace_front(const T& value);
+    bool empty() const noexcept;
+    const_iterator end() const noexcept;
 
     ~list();
 };
