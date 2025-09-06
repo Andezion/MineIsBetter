@@ -27,6 +27,16 @@ public:
         const_iterator& operator++() noexcept { current = current->next; return *this; }
         bool operator!=(const const_iterator& other) const noexcept { return current != other.current; }
     };
+    struct iterator
+    {
+        Node* current;
+
+        explicit iterator(Node* p = nullptr) : current(p) {}
+
+        T& operator*() noexcept { return current->value; }
+        iterator& operator++() noexcept { current = current->next; return *this; }
+        bool operator!=(iterator& other) noexcept { return current != other.current; }
+    };
 
     list();
     explicit list(size_t size);
@@ -55,6 +65,16 @@ public:
     void emplace_front(const T& value);
     bool empty() const noexcept;
     const_iterator end() const noexcept;
+    iterator erase(const_iterator pos);
+    iterator erase(const_iterator first, const_iterator last);
+    T& front();
+    const T& front() const;
+
+    iterator insert (const_iterator position, const T& val);
+    iterator insert (const_iterator position, T n, const T& val);
+    template <class InputIterator>iterator insert (const_iterator position, InputIterator first, InputIterator last);
+    iterator insert (const_iterator position, T&& val);
+    iterator insert (const_iterator position, std::initializer_list<T> il);
 
     ~list();
 };
