@@ -44,6 +44,16 @@ public:
     list(list&& other) noexcept;
     list(std::initializer_list<T> init);
 
+    explicit list (const allocator_type& alloc = allocator_type());
+    explicit list (T n);
+    list (T n, const value_type& val, const allocator_type& alloc = allocator_type());
+    template <class InputIterator> list (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type());
+    list (const list& x);
+    list (const list& x, const allocator_type& alloc);
+    list (list&& x);
+    list (list&& x, const allocator_type& alloc);
+    list (initializer_list<T> il, const allocator_type& alloc = allocator_type());
+
     list& operator=(const list& other);
     list& operator=(list&& other) noexcept;
 
@@ -75,6 +85,53 @@ public:
     template <class InputIterator>iterator insert (const_iterator position, InputIterator first, InputIterator last);
     iterator insert (const_iterator position, T&& val);
     iterator insert (const_iterator position, std::initializer_list<T> il);
+
+    T max_size() const noexcept;
+    void merge (list& x);
+    void merge (list&& x);
+    template <class Compare>  void merge (list& x, Compare comp);
+    template <class Compare>  void merge (list&& x, Compare comp);
+
+    list& operator= (const list& x);
+    list& operator= (list&& x);
+    list& operator= (std::initializer_list<T> il);
+
+    void pop_back();
+    void pop_front();
+
+    void push_back (const T& val);
+    void push_back (T&& val);
+    void push_front (const T& val);
+    void push_front (T&& val);
+
+    reverse_iterator rbegin() noexcept;
+    const_reverse_iterator rbegin() const noexcept;
+
+    void remove (const T& val);
+    template <class Predicate>  void remove_if (Predicate pred);
+    reverse_iterator rend() noexcept;
+    const_reverse_iterator rend() const noexcept;
+    void resize (T n);
+    void resize (T n, const T& val);
+    void reverse() noexcept;
+    void sort();
+
+    void splice (const_iterator position, list& x);
+    void splice (const_iterator position, list&& x);
+    void splice (const_iterator position, list& x, const_iterator i);
+    void splice (const_iterator position, list&& x, const_iterator i);
+    void splice (const_iterator position, list& x,const_iterator first, const_iterator last);
+    void splice (const_iterator position, list&& x,const_iterator first, const_iterator last);
+
+    void swap (list& x);
+    void unique();
+
+    template <class T, class Alloc>  bool operator== (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator!= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator<  (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator<= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator>  (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator>= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
 
     ~list();
 };
