@@ -11,4 +11,5 @@ add_executable(MineIsBetter
         stack.h
         array.h
         algorithm.h
-        list.h)
+        list.h
+        deque.h)
