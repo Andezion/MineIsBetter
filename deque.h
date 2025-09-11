@@ -43,4 +43,33 @@ public:
     iterator erase (const_iterator first, const_iterator last);
     reference front();
     const_reference front() const;
+    allocator_type get_allocator() const;
+    iterator insert (iterator position, const T& val);
+    void insert (iterator position, size_type n, const T& val);
+    template <class InputIterator> void insert (iterator position, InputIterator first, InputIterator last);
+    size_type max_size() const;
+    reference operator[] (T n);
+    const_reference operator[] (T n) const;
+    deque& operator= (const deque& x);
+    void pop_back();
+    void pop_front();
+    void push_back (const T& val);
+    void push_front (const T& val);
+    reverse_iterator rbegin();
+    const_reverse_iterator rbegin() const;
+    reverse_iterator rend();
+    const_reverse_iterator rend() const;
+    void resize (T n, T val = T());
+    void shrink_to_fit();
+    T size() const;
+    void swap (deque& x);
+
+    template <class T, class Alloc>  bool operator== (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator!= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator<  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator<= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator>  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+    template <class T, class Alloc>  bool operator>= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs);
+
+    template <class T, class Alloc>  void swap (deque<T,Alloc>& x, deque<T,Alloc>& y);
 };
