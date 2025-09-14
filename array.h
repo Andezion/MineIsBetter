@@ -2,6 +2,18 @@
 
 #include <stdexcept>
 
+// value_type	T
+// reference	value_type&
+// const_reference	const value_type&
+// pointer	value_type*
+// const_pointer	const value_type*
+// iterator	a random access iterator to value_type	convertible to const_iterator
+// const_iterator	a random access iterator to const value_type
+// reverse_iterator	reverse_iterator<iterator>
+// const_reverse_iterator	reverse_iterator<const_iterator>
+// size_type	size_t	unsigned integral type
+// difference_type	ptrdiff_t	signed integral type
+
 template<typename T>
 class array
 {
@@ -32,6 +44,47 @@ public:
     const T* rend() const noexcept;
     constexpr size_t size() const noexcept;
     void swap(array & other) noexcept;
+
+    reference at ( T n );
+    const_reference at ( T n ) const;
+    reference back();
+    const_reference back() const;
+    iterator begin() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
+    T* data() noexcept;
+    const T* data() const noexcept;
+    constexpr bool empty() noexcept;
+    iterator end() noexcept;
+    const_iterator end() const noexcept;
+    void fill (const T& val);
+    reference front();
+    const_reference front() const;
+    constexpr T max_size() noexcept;
+    reference operator[] (T n);
+    const_reference operator[] (T n) const;
+    reverse_iterator rbegin() noexcept;
+    const_reverse_iterator rbegin() const noexcept;
+    reverse_iterator rend() noexcept;
+    const_reverse_iterator rend() const noexcept;
+    constexpr T size() noexcept;
+    void swap (array& x) noexcept(noexcept(swap(declval<T&>(),declval<T&>())));
+    template <size_t I, class T, size_t N> T& get (array<T,N>& arr) noexcept;
+    template <size_t I, class T, size_t N> T&& get (array<T,N>&& arr) noexcept;
+    template <size_t I, class T, size_t N> const T& get (const array<T,N>& arr) noexcept;
+
+    template <class T, size_T N>  bool operator== ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator!= ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator<  ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator<= ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator>  ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator>= ( const array<T,N>& lhs, const array<T,N>& rhs );
+
+    template <size_t I, class Tpl> class tuple_element;
+    template <class Tpl> class tuple_size;
 };
 
 template<typename T>
