@@ -59,6 +59,32 @@ public:
     void shrink_to_fit();
     size_t size() const noexcept;
     void swap(vector& other) noexcept;
+
+    template <class InputIterator> void assign(InputIterator first, InputIterator last);
+    void assign (T n, const T& val);
+    reference at (T n);
+    const_reference at (T n) const;
+    reference back();
+    const_reference back() const;
+    iterator begin() noexcept;
+    const_iterator begin() const noexcept;
+    size_type capacity() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+    void clear() noexcept;
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
+    value_type* data() noexcept;
+    const value_type* data() const noexcept;
+    template <class... Args>iterator emplace(const_iterator position, Args&&... args);
+    template <class... Args>  void emplace_back(Args&&... args);
+    bool empty() const noexcept;
+    iterator end() noexcept;
+    const_iterator end() const noexcept;
+    iterator erase (const_iterator position);
+    iterator erase (const_iterator first, const_iterator last);
+    reference front();
+    const_reference front() const;
 };
 
 template<typename T>
