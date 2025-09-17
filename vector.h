@@ -85,6 +85,31 @@ public:
     iterator erase (const_iterator first, const_iterator last);
     reference front();
     const_reference front() const;
+    allocator_type get_allocator() const noexcept;
+    iterator insert (const_iterator position, const T& val);
+    iterator insert (const_iterator position, size_type n, const T& val);
+    template <class InputIterator>iterator insert (const_iterator position, InputIterator first, InputIterator last);
+    iterator insert (const_iterator position, T&& val);
+    iterator insert (const_iterator position, initializer_list<T> il);
+    size_type max_size() const noexcept;
+    reference operator[] (T n);
+    const_reference operator[] (T n) const;
+    vector& operator= (const vector& x);
+    vector& operator= (vector&& x);
+    vector& operator= (initializer_list<T> il);
+    void pop_back();
+    void push_back (const T& val);
+    void push_back (T&& val);
+    reverse_iterator rbegin() noexcept;
+    const_reverse_iterator rbegin() const noexcept;
+    reverse_iterator rend() noexcept;
+    const_reverse_iterator rend() const noexcept;
+    void reserve (T n);
+    void resize (T n);
+    void resize (T n, const T& val);
+    void shrink_to_fit();
+    T size() const noexcept;
+    void swap (vector& x);
 };
 
 template<typename T>
