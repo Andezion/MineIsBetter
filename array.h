@@ -38,6 +38,13 @@ public:
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
 
+    reference at ( size_type n );
+    const_reference at ( size_type n ) const;
+    reference back();
+    const_reference back() const;
+    iterator begin() noexcept;
+    const_iterator begin() const noexcept;
+
     T& at(size_t index) const;
     T& back() const;
     T* begin() const noexcept;
