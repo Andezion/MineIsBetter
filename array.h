@@ -44,6 +44,38 @@ public:
     const_reference back() const;
     iterator begin() noexcept;
     const_iterator begin() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
+    value_type* data() noexcept;
+    const value_type* data() const noexcept;
+    constexpr bool empty() noexcept;
+    iterator end() noexcept;
+    const_iterator end() const noexcept;
+    void fill (const value_type& val);
+    reference front();
+    const_reference front() const;
+    constexpr size_type max_size() noexcept;
+    reference operator[] (size_type n);
+    const_reference operator[] (size_type n) const;
+    reverse_iterator rbegin() noexcept;
+    const_reverse_iterator rbegin() const noexcept;
+    reverse_iterator rend() noexcept;
+    const_reverse_iterator rend() const noexcept;
+    constexpr size_type size() noexcept;
+    void swap (array& x) noexcept(noexcept(swap(std::declval<value_type&>(), std::declval<value_type&>())));
+
+    template <size_t I, class T, size_t N> T& get (array<T,N>& arr) noexcept;
+    template <size_t I, class T, size_t N> T&& get (array<T,N>&& arr) noexcept;
+    template <size_t I, class T, size_t N> const T& get (const array<T,N>& arr) noexcept;
+
+    template <class T, size_T N>  bool operator== ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator!= ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator<  ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator<= ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator>  ( const array<T,N>& lhs, const array<T,N>& rhs );
+    template <class T, size_T N>  bool operator>= ( const array<T,N>& lhs, const array<T,N>& rhs );
 
     T& at(size_t index) const;
     T& back() const;
