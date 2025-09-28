@@ -76,6 +76,88 @@ constexpr typename array<T, N>::reference array<T, N>::at(size_type pos)
     return elems[pos];
 }
 
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reference array<T, N>::at(size_type pos) const
+{
+    if (pos >= size())
+    {
+        throw std::out_of_range("array::at");
+    }
+    return elems[pos];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::reference array<T, N>::operator[](size_type pos)
+{
+    if (pos >= size())
+    {
+        throw std::out_of_range("array::at");
+    }
+    return elems[pos];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reference array<T, N>::operator[](size_type pos) const
+{
+    if (pos >= size())
+    {
+        throw std::out_of_range("array::at");
+    }
+    return elems[pos];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::reference array<T, N>::front()
+{
+    if (empty())
+    {
+        throw std::out_of_range("array::front");
+    }
+    return elems[0];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reference array<T, N>::front() const
+{
+    if (empty())
+    {
+        throw std::out_of_range("array::front");
+    }
+    return elems[0];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::reference array<T, N>::back()
+{
+    if (empty())
+    {
+        throw std::out_of_range("array::back");
+    }
+    return elems[size() - 1];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reference array<T, N>::back() const
+{
+    if (empty())
+    {
+        throw std::out_of_range("array::back");
+    }
+    return elems[size() - 1];
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::pointer array<T, N>::data() noexcept
+{
+    return elems;
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_pointer array<T, N>::data() const noexcept
+{
+    return elems;
+}
+
 template <std::size_t I, class T, std::size_t N>
 constexpr T& get(array<T, N>& arr) noexcept;
 
