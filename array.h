@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <iterator>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -56,15 +57,28 @@ struct array {
     constexpr const_reverse_iterator rend() const noexcept;
     constexpr const_reverse_iterator crend() const noexcept;
 
-    [[nodiscard]] constexpr bool empty() const noexcept;
-    [[nodiscard]] constexpr size_type size() const noexcept;
-    [[nodiscard]] constexpr size_type max_size() const noexcept;
+    [[nodiscard]] constexpr bool empty() noexcept;
+    [[nodiscard]] constexpr size_type size() noexcept;
+    [[nodiscard]] constexpr size_type max_size() noexcept;
 
     void fill(const T& value);
     void swap(array& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())));
 
     T elems[N ? N : 1];
 };
+
+template<class T, std::size_t N>
+void array<T, N>::fill(const T &value)
+{
+    std::fill(elems, elems + N, value);
+}
+
+template<class T, std::size_t N>
+void array<T, N>::swap(array &other) noexcept(noexcept(std::swap(std::declval<T &>(), std::declval<T &>())))
+{
+    using std::swap;
+    swap(other.elems, elems + N);
+}
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::reference array<T, N>::at(size_type pos)
@@ -212,17 +226,93 @@ constexpr typename array<T, N>::const_reverse_iterator array<T, N>::crbegin() co
     return elems + size();
 }
 
-template <std::size_t I, class T, std::size_t N>
-constexpr T& get(array<T, N>& arr) noexcept;
+template<class T, std::size_t N>
+constexpr typename array<T, N>::reverse_iterator array<T, N>::rend() noexcept
+{
+    return elems + 0;
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reverse_iterator array<T, N>::rend() const noexcept
+{
+    return elems + 0;
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::const_reverse_iterator array<T, N>::crend() const noexcept
+{
+    return elems + 0;
+}
+
+template<class T, std::size_t N>
+constexpr bool array<T, N>::empty() noexcept
+{
+    return size() == 0;
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::size_type array<T, N>::size() noexcept
+{
+    return N;
+}
+
+template<class T, std::size_t N>
+constexpr typename array<T, N>::size_type array<T, N>::max_size() noexcept
+{
+    return std::numeric_limits<size_type>::max();
+}
 
 template <std::size_t I, class T, std::size_t N>
-constexpr T&& get(array<T, N>&& arr) noexcept;
+constexpr T& get(array<T, N>& arr);
+
+template<std::size_t I, class T, std::size_t N>
+constexpr T & get(array<T, N> &arr)
+{
+    if (I >= N)
+    {
+        throw std::out_of_range("array::get");
+    }
+    return arr[I];
+}
 
 template <std::size_t I, class T, std::size_t N>
-constexpr const T& get(const array<T, N>& arr) noexcept;
+constexpr T&& get(array<T, N>&& arr);
+
+template<std::size_t I, class T, std::size_t N>
+constexpr T && get(array<T, N> &&arr)
+{
+    if (I >= N)
+    {
+        throw std::out_of_range("array::get");
+    }
+    return arr[I];
+}
 
 template <std::size_t I, class T, std::size_t N>
-constexpr const T&& get(const array<T, N>&& arr) noexcept;
+constexpr const T& get(const array<T, N>& arr);
+
+template<std::size_t I, class T, std::size_t N>
+constexpr const T & get(const array<T, N> &arr)
+{
+    if (I >= N)
+    {
+        throw std::out_of_range("array::get");
+    }
+    return arr[I];
+}
+
+template <std::size_t I, class T, std::size_t N>
+constexpr const T&& get(const array<T, N>&& arr);
+
+template<std::size_t I, class T, std::size_t N>
+constexpr const T && get(const array<T, N> &&arr)
+{
+    if (I >= N)
+    {
+        throw std::out_of_range("array::get");
+    }
+    return arr[I];
+}
 
 namespace std {
     template <class T, std::size_t N>
@@ -238,8 +328,42 @@ namespace std {
 template <class T, std::size_t N>
 constexpr bool operator==(const array<T, N>& lhs, const array<T, N>& rhs);
 
+template<class T, std::size_t N>
+constexpr bool operator==(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
+        return false;
+    }
+    for (std::size_t i = 0; i < lhs.size(); i++)
+    {
+        if (lhs[i] != rhs[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 template <class T, std::size_t N>
 constexpr bool operator!=(const array<T, N>& lhs, const array<T, N>& rhs);
+
+template<class T, std::size_t N>
+constexpr bool operator!=(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
+        return true;
+    }
+    for (std::size_t i = 0; i < lhs.size(); i++)
+    {
+        if (lhs[i] != rhs[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 template <class T, std::size_t N>
 constexpr bool operator<(const array<T, N>& lhs, const array<T, N>& rhs);
