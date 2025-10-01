@@ -315,15 +315,16 @@ constexpr const T && get(const array<T, N> &&arr)
 }
 
 namespace std {
+
     template <class T, std::size_t N>
-    struct tuple_size<array<T, N>> : std::integral_constant<std::size_t, N> {};
+    struct tuple_size<array<T, N>> : integral_constant<std::size_t, N> {};
 
     template <std::size_t I, class T, std::size_t N>
     struct tuple_element<I, array<T, N>> {
+        static_assert(I < N, "Index out of bounds in tuple_element<std::array>");
         using type = T;
     };
 }
-
 
 template <class T, std::size_t N>
 constexpr bool operator==(const array<T, N>& lhs, const array<T, N>& rhs);
@@ -331,16 +332,9 @@ constexpr bool operator==(const array<T, N>& lhs, const array<T, N>& rhs);
 template<class T, std::size_t N>
 constexpr bool operator==(const array<T, N> &lhs, const array<T, N> &rhs)
 {
-    if (lhs.size() != rhs.size())
-    {
-        return false;
-    }
     for (std::size_t i = 0; i < lhs.size(); i++)
     {
-        if (lhs[i] != rhs[i])
-        {
-            return false;
-        }
+        if (lhs[i] != rhs[i]) return false;
     }
     return true;
 }
@@ -351,22 +345,26 @@ constexpr bool operator!=(const array<T, N>& lhs, const array<T, N>& rhs);
 template<class T, std::size_t N>
 constexpr bool operator!=(const array<T, N> &lhs, const array<T, N> &rhs)
 {
-    if (lhs.size() != rhs.size())
+    for (std::size_t i = 0; i < N; i++)
     {
-        return true;
+        if (rhs[i] == lhs[i]) return false;
     }
-    for (std::size_t i = 0; i < lhs.size(); i++)
-    {
-        if (lhs[i] != rhs[i])
-        {
-            return true;
-        }
-    }
-    return false;
+    return true;
 }
 
 template <class T, std::size_t N>
 constexpr bool operator<(const array<T, N>& lhs, const array<T, N>& rhs);
+
+template<class T, std::size_t N>
+constexpr bool operator<(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    for (std::size_t i = 0; i < N; i++)
+    {
+        if (lhs[i] < rhs[i]) return true;
+        if (rhs[i] < lhs[i]) return false;
+    }
+    return false;
+}
 
 template <class T, std::size_t N>
 constexpr bool operator<=(const array<T, N>& lhs, const array<T, N>& rhs);
@@ -374,5 +372,38 @@ constexpr bool operator<=(const array<T, N>& lhs, const array<T, N>& rhs);
 template <class T, std::size_t N>
 constexpr bool operator>(const array<T, N>& lhs, const array<T, N>& rhs);
 
+template<class T, std::size_t N>
+constexpr bool operator<=(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    for (std::size_t i = 0; i < N; i++)
+    {
+        if (lhs[i] <= rhs[i]) return true;
+        if (rhs[i] < lhs[i]) return false;
+    }
+    return false;
+}
+
+template<class T, std::size_t N>
+constexpr bool operator>(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    for (std::size_t i = 0; i < N; i++)
+    {
+        if (lhs[i] > rhs[i]) return true;
+        if (rhs[i] > lhs[i]) return false;
+    }
+    return false;
+}
+
 template <class T, std::size_t N>
 constexpr bool operator>=(const array<T, N>& lhs, const array<T, N>& rhs);
+
+template<class T, std::size_t N>
+constexpr bool operator>=(const array<T, N> &lhs, const array<T, N> &rhs)
+{
+    for (std::size_t i = 0; i < N; i++)
+    {
+        if (lhs[i] >= rhs[i]) return true;
+        if (rhs[i] > lhs[i]) return false;
+    }
+    return false;
+}
