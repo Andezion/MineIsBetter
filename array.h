@@ -76,8 +76,7 @@ void array<T, N>::fill(const T &value)
 template<class T, std::size_t N>
 void array<T, N>::swap(array &other) noexcept(noexcept(std::swap(std::declval<T &>(), std::declval<T &>())))
 {
-    using std::swap;
-    swap(other.elems, elems + N);
+    std::swap_ranges(begin(), end(), other.begin());
 }
 
 template<class T, std::size_t N>
@@ -229,25 +228,25 @@ constexpr typename array<T, N>::const_reverse_iterator array<T, N>::crbegin() co
 template<class T, std::size_t N>
 constexpr typename array<T, N>::reverse_iterator array<T, N>::rend() noexcept
 {
-    return elems + 0;
+    return reverse_iterator(begin());
 }
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_reverse_iterator array<T, N>::rend() const noexcept
 {
-    return elems + 0;
+    return const_reverse_iterator(begin());
 }
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_reverse_iterator array<T, N>::crend() const noexcept
 {
-    return elems + 0;
+    return const_reverse_iterator(begin());
 }
 
 template<class T, std::size_t N>
 constexpr bool array<T, N>::empty() noexcept
 {
-    return size() == 0;
+    return N == 0;
 }
 
 template<class T, std::size_t N>
