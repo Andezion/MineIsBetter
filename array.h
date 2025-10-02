@@ -186,7 +186,7 @@ constexpr typename array<T, N>::const_iterator array<T, N>::begin() const noexce
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_iterator array<T, N>::cbegin() const noexcept
 {
-    return elems + 0;
+    return const_iterator(begin());
 }
 
 template<class T, std::size_t N>
@@ -204,25 +204,25 @@ constexpr typename array<T, N>::const_iterator array<T, N>::end() const noexcept
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_iterator array<T, N>::cend() const noexcept
 {
-    return elems + size();
+    return const_iterator(end());
 }
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::reverse_iterator array<T, N>::rbegin() noexcept
 {
-    return elems + size();
+    return reverse_iterator(end());
 }
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_reverse_iterator array<T, N>::rbegin() const noexcept
 {
-    return elems + size();
+    return const_reverse_iterator(end());
 }
 
 template<class T, std::size_t N>
 constexpr typename array<T, N>::const_reverse_iterator array<T, N>::crbegin() const noexcept
 {
-    return elems + size();
+    return const_reverse_iterator(end());
 }
 
 template<class T, std::size_t N>
@@ -344,11 +344,7 @@ constexpr bool operator!=(const array<T, N>& lhs, const array<T, N>& rhs);
 template<class T, std::size_t N>
 constexpr bool operator!=(const array<T, N> &lhs, const array<T, N> &rhs)
 {
-    for (std::size_t i = 0; i < N; i++)
-    {
-        if (rhs[i] == lhs[i]) return false;
-    }
-    return true;
+    return !(lhs == rhs);
 }
 
 template <class T, std::size_t N>
@@ -374,12 +370,7 @@ constexpr bool operator>(const array<T, N>& lhs, const array<T, N>& rhs);
 template<class T, std::size_t N>
 constexpr bool operator<=(const array<T, N> &lhs, const array<T, N> &rhs)
 {
-    for (std::size_t i = 0; i < N; i++)
-    {
-        if (lhs[i] <= rhs[i]) return true;
-        if (rhs[i] < lhs[i]) return false;
-    }
-    return false;
+    return !(rhs < lhs);
 }
 
 template<class T, std::size_t N>
@@ -399,10 +390,5 @@ constexpr bool operator>=(const array<T, N>& lhs, const array<T, N>& rhs);
 template<class T, std::size_t N>
 constexpr bool operator>=(const array<T, N> &lhs, const array<T, N> &rhs)
 {
-    for (std::size_t i = 0; i < N; i++)
-    {
-        if (lhs[i] >= rhs[i]) return true;
-        if (rhs[i] > lhs[i]) return false;
-    }
-    return false;
+    return !(lhs < rhs);
 }
