@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <cassert>
 
-
 template <typename T, typename Alloc = std::allocator<T>>
 class vector {
 public:
@@ -159,6 +158,60 @@ private:
     void swap_alloc_and_data(vector& other) noexcept;
     void check_range(size_type pos) const;
 };
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(const vector &other)
+{
+    alloc_ = other.get_allocator();
+    size_ = other.size();
+    capacity_ = other.capacity();
+
+    if (size_ > 0)
+    {
+        data_ = alloc_.allocate(capacity_);
+        std::copy(other.begin(), other.end(), data_);
+    }
+    else
+    {
+        data_ = nullptr;
+    }
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::~vector()
+{
+    if (data_ != nullptr)
+    {
+        alloc_.deallocate(data_, capacity_);
+    }
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
+{
+    if (this != &other)
+    {
+        if (data_ != nullptr)
+        {
+            alloc_.deallocate(data_, capacity_);
+        }
+
+        alloc_ = other.get_allocator();
+        size_ = other.size();
+        capacity_ = other.capacity();
+
+        if (size_ > 0)
+        {
+            data_ = alloc_.allocate(capacity_);
+            std::copy(other.begin(), other.end(), data_);
+        }
+        else
+        {
+            data_ = nullptr;
+        }
+    }
+    return *this;
+}
 
 template <typename T, typename Alloc>
 void swap(vector<T,Alloc>& a, vector<T,Alloc>& b) noexcept(noexcept(a.swap(b))) {
