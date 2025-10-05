@@ -213,6 +213,51 @@ vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
     return *this;
 }
 
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
+{
+    check_range(pos);
+    return data_[pos];
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reference vector<T, Alloc>::at(size_type pos) const
+{
+    return const_reference(at(pos));
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::reference vector<T, Alloc>::front()
+{
+    check_range(0);
+    return data_[0];
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reference vector<T, Alloc>::front() const
+{
+    return const_reference(front());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::reference vector<T, Alloc>::back()
+{
+    check_range(size_ - 1);
+    return data_[size_ - 1];
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reference vector<T, Alloc>::back() const
+{
+    return const_reference(back());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::size_type vector<T, Alloc>::size() const noexcept
+{
+    return size_;
+}
+
 template <typename T, typename Alloc>
 void swap(vector<T,Alloc>& a, vector<T,Alloc>& b) noexcept(noexcept(a.swap(b))) {
     a.swap(b);
