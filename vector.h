@@ -4,11 +4,8 @@
 #include <iterator>
 #include <type_traits>
 #include <initializer_list>
-#include <utility>
 #include <algorithm>
-#include <stdexcept>
-#include <cstddef>
-#include <cassert>
+
 
 template <typename T, typename Alloc = std::allocator<T>>
 class vector {
@@ -250,6 +247,18 @@ template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reference vector<T, Alloc>::back() const
 {
     return const_reference(back());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::pointer vector<T, Alloc>::data() noexcept
+{
+    return data_;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_pointer vector<T, Alloc>::data() const noexcept
+{
+    return const_pointer(data());
 }
 
 template<typename T, typename Alloc>
