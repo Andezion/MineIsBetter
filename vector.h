@@ -224,6 +224,19 @@ typename vector<T, Alloc>::const_reference vector<T, Alloc>::at(size_type pos) c
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::reference vector<T, Alloc>::operator[](size_type pos) noexcept
+{
+    check_range(pos);
+    return reference(*(data_ + pos));
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reference vector<T, Alloc>::operator[](size_type pos) const noexcept
+{
+    return const_reference(operator[](pos));
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::front()
 {
     check_range(0);
@@ -259,6 +272,56 @@ template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_pointer vector<T, Alloc>::data() const noexcept
 {
     return const_pointer(data());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator vector<T, Alloc>::begin() noexcept
+{
+    check_range(0);
+    return data_;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_iterator vector<T, Alloc>::begin() const noexcept
+{
+    return const_iterator(begin());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_iterator vector<T, Alloc>::cbegin() const noexcept
+{
+    return const_iterator(begin());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator vector<T, Alloc>::end() noexcept
+{
+    check_range(size_ - 1);
+    return data_ + size_;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_iterator vector<T, Alloc>::end() const noexcept
+{
+    return const_iterator(end());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_iterator vector<T, Alloc>::cend() const noexcept
+{
+    return const_iterator(cend());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::reverse_iterator vector<T, Alloc>::rbegin() noexcept
+{
+    return reverse_iterator(end());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::rbegin() const noexcept
+{
+    return const_reverse_iterator(cend());
 }
 
 template<typename T, typename Alloc>
