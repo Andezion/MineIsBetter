@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <initializer_list>
 #include <algorithm>
+#include <limits>
 
 
 template <typename T, typename Alloc = std::allocator<T>>
@@ -155,6 +156,7 @@ private:
     void swap_alloc_and_data(vector& other) noexcept;
     void check_range(size_type pos) const;
 };
+
 
 template<typename T, typename Alloc>
 vector<T, Alloc>::vector(const vector &other)
@@ -325,9 +327,57 @@ typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::rbegin() con
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::crbegin() const noexcept
+{
+    return const_reverse_iterator(cend());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::reverse_iterator vector<T, Alloc>::rend() noexcept
+{
+    return reverse_iterator(begin());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::rend() const noexcept
+{
+    return const_reverse_iterator(cbegin());
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::crend() const noexcept
+{
+    return const_reverse_iterator(cbegin());
+}
+
+template<typename T, typename Alloc>
+bool vector<T, Alloc>::empty() const noexcept
+{
+    return size_ == 0;
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::size_type vector<T, Alloc>::size() const noexcept
 {
     return size_;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept
+{
+    return std::numeric_limits<std::size_t>::max();
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::clear() noexcept
+{
+    if (data_ != nullptr)
+    {
+        alloc_.deallocate(data_, capacity_);
+    }
+    size_ = 0;
+    capacity_ = 0;
+    data_ = nullptr;
 }
 
 template <typename T, typename Alloc>
