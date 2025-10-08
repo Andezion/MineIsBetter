@@ -213,6 +213,31 @@ vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
 }
 
 template<typename T, typename Alloc>
+vector<T, Alloc> & vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
+{
+    if (this != &il)
+    {
+        if (data_ != nullptr)
+        {
+            alloc_.deallocate(data_, capacity_);
+        }
+        alloc_ = il;
+        size_ = il.size();
+        capacity_ = il.capacity();
+        if (size_ > 0)
+        {
+            data_ = alloc_.allocate(capacity_);
+            std::copy(il.begin(), il.end(), data_);
+        }
+        else
+        {
+            data_ = nullptr;
+        }
+    }
+    return *this;
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
 {
     check_range(pos);
@@ -363,9 +388,53 @@ typename vector<T, Alloc>::size_type vector<T, Alloc>::size() const noexcept
 }
 
 template<typename T, typename Alloc>
-typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept
+typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept {
+    return std::allocator_traits<Alloc>::max_size(Alloc());
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::reserve(size_type new_cap)
 {
-    return std::numeric_limits<std::size_t>::max();
+    check_range(new_cap);
+    if (size_ < new_cap)
+    {
+        std::allocator_traits<Alloc>::deallocate(Alloc(), data_, new_cap);
+    }
+    else
+    {
+        std::allocator_traits<Alloc>::deallocate(Alloc(), data_, size_);
+    }
+}
+
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::size_type vector<T, Alloc>::capacity() const noexcept
+{
+    return capacity_;
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::shrink_to_fit()
+{
+    if (capacity_ > size_)
+    {
+        T* new_data = alloc_.allocate(size_);
+
+        for (size_type i = 0; i < size_; ++i)
+        {
+            std::allocator_traits<Alloc>::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+        }
+
+        for (size_type i = 0; i < size_; ++i)
+        {
+            std::allocator_traits<Alloc>::destroy(alloc_, data_ + i);
+        }
+
+        alloc_.deallocate(data_, capacity_);
+
+        data_ = new_data;
+        capacity_ = size_;
+    }
 }
 
 template<typename T, typename Alloc>
@@ -378,6 +447,12 @@ void vector<T, Alloc>::clear() noexcept
     size_ = 0;
     capacity_ = 0;
     data_ = nullptr;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
+{
+    return alloc_;
 }
 
 template <typename T, typename Alloc>
