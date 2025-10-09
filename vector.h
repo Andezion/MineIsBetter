@@ -213,6 +213,33 @@ vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
 }
 
 template<typename T, typename Alloc>
+vector<T, Alloc> & vector<T, Alloc>::operator=(
+    vector &&other) noexcept(std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value || std
+    ::is_nothrow_move_assignable<allocator_type>::value)
+{
+    if (this != &&other)
+    {
+        if (data_ != nullptr)
+        {
+            alloc_.deallocate(data_, capacity_);
+        }
+        alloc_ = other.get_allocator();
+        size_ = other.size();
+        capacity_ = other.capacity();
+        if (size_ > 0)
+        {
+            data_ = alloc_.allocate(capacity_);
+            std::copy(other.begin(), other.end(), data_);
+        }
+        else
+        {
+            data_ = nullptr;
+        }
+    }
+    return *this;
+}
+
+template<typename T, typename Alloc>
 vector<T, Alloc> & vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
 {
     if (this != &il)
@@ -450,9 +477,24 @@ void vector<T, Alloc>::clear() noexcept
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos, const value_type &value)
+{
+
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
 {
     return alloc_;
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::deallocate(pointer p, size_type n) noexcept
+{
+    if (p != nullptr)
+    {
+        std::allocator_traits<Alloc>::deallocate(Alloc(), p, n);
+    }
 }
 
 template <typename T, typename Alloc>
