@@ -160,19 +160,14 @@ private:
 
 template<typename T, typename Alloc>
 vector<T, Alloc>::vector(const vector &other)
+    : alloc_(traits_type::select_on_container_copy_construction(other.alloc_))
+    , size_(other.size_)
+    , capacity_(other.capacity_)
 {
-    alloc_ = other.get_allocator();
-    size_ = other.size();
-    capacity_ = other.capacity();
-
-    if (size_ > 0)
+    if (capacity_ > 0)
     {
         data_ = alloc_.allocate(capacity_);
-        std::copy(other.begin(), other.end(), data_);
-    }
-    else
-    {
-        data_ = nullptr;
+        std::uninitialized_copy(other.begin(), other.end(), data_);
     }
 }
 
@@ -181,28 +176,43 @@ vector<T, Alloc>::~vector()
 {
     if (data_ != nullptr)
     {
+        for (size_type i = 0; i < size_; ++i)
+        {
+            traits_type::destroy(alloc_, data_ + i);
+        }
+
         alloc_.deallocate(data_, capacity_);
     }
 }
 
+
 template<typename T, typename Alloc>
-vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
+vector<T, Alloc>& vector<T, Alloc>::operator=(const vector &other)
 {
     if (this != &other)
     {
+        for (size_type i = 0; i < size_; ++i)
+        {
+            traits_type::destroy(alloc_, data_ + i);
+        }
+
         if (data_ != nullptr)
         {
             alloc_.deallocate(data_, capacity_);
         }
 
-        alloc_ = other.get_allocator();
-        size_ = other.size();
-        capacity_ = other.capacity();
+        if (traits_type::propagate_on_container_copy_assignment::value)
+        {
+            alloc_ = other.alloc_;
+        }
 
-        if (size_ > 0)
+        size_ = other.size_;
+        capacity_ = other.capacity_;
+
+        if (capacity_ > 0)
         {
             data_ = alloc_.allocate(capacity_);
-            std::copy(other.begin(), other.end(), data_);
+            std::uninitialized_copy(other.begin(), other.end(), data_);
         }
         else
         {
@@ -213,54 +223,60 @@ vector<T, Alloc> & vector<T, Alloc>::operator=(const vector &other)
 }
 
 template<typename T, typename Alloc>
-vector<T, Alloc> & vector<T, Alloc>::operator=(
-    vector &&other) noexcept(std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value || std
-    ::is_nothrow_move_assignable<allocator_type>::value)
+vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
+    traits_type::propagate_on_container_move_assignment::value ||
+    std::is_nothrow_move_assignable<allocator_type>::value)
 {
-    if (this != &&other)
+    if (this != &other)
     {
+        for (size_type i = 0; i < size_; ++i) {
+            traits_type::destroy(alloc_, data_ + i);
+        }
+
         if (data_ != nullptr)
         {
             alloc_.deallocate(data_, capacity_);
         }
-        alloc_ = other.get_allocator();
-        size_ = other.size();
-        capacity_ = other.capacity();
-        if (size_ > 0)
+
+        if (traits_type::propagate_on_container_move_assignment::value)
         {
-            data_ = alloc_.allocate(capacity_);
-            std::copy(other.begin(), other.end(), data_);
+            alloc_ = std::move(other.alloc_);
         }
-        else
-        {
-            data_ = nullptr;
-        }
+
+        data_ = other.data_;
+        size_ = other.size_;
+        capacity_ = other.capacity_;
+
+        other.data_ = nullptr;
+        other.size_ = 0;
+        other.capacity_ = 0;
     }
     return *this;
 }
 
 template<typename T, typename Alloc>
-vector<T, Alloc> & vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
+vector<T, Alloc>& vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
 {
-    if (this != &il)
+    for (size_type i = 0; i < size_; ++i)
+    {
+        traits_type::destroy(alloc_, data_ + i);
+    }
+
+    size_type new_size = il.size();
+
+    if (new_size > capacity_)
     {
         if (data_ != nullptr)
         {
             alloc_.deallocate(data_, capacity_);
         }
-        alloc_ = il;
-        size_ = il.size();
-        capacity_ = il.capacity();
-        if (size_ > 0)
-        {
-            data_ = alloc_.allocate(capacity_);
-            std::copy(il.begin(), il.end(), data_);
-        }
-        else
-        {
-            data_ = nullptr;
-        }
+        capacity_ = new_size;
+        data_ = alloc_.allocate(capacity_);
     }
+
+    size_ = new_size;
+    std::uninitialized_copy(il.begin(), il.end(), data_);
+
     return *this;
 }
 
