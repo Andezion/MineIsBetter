@@ -227,17 +227,19 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
     traits_type::propagate_on_container_move_assignment::value ||
     std::is_nothrow_move_assignable<allocator_type>::value)
 {
-    if (this != &other) {
-        // Уничтожаем свои элементы и освобождаем память
-        for (size_type i = 0; i < size_; ++i) {
+    if (this != &other)
+    {
+        for (size_type i = 0; i < size_; ++i)
+        {
             traits_type::destroy(alloc_, data_ + i);
         }
-        if (data_ != nullptr) {
+        if (data_ != nullptr)
+        {
             alloc_.deallocate(data_, capacity_);
         }
 
-        // Просто крадём данные из other
-        if (traits_type::propagate_on_container_move_assignment::value) {
+        if (traits_type::propagate_on_container_move_assignment::value)
+        {
             alloc_ = std::move(other.alloc_);
         }
 
@@ -245,7 +247,6 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
         size_ = other.size_;
         capacity_ = other.capacity_;
 
-        // Оставляем other в валидном пустом состоянии
         other.data_ = nullptr;
         other.size_ = 0;
         other.capacity_ = 0;
@@ -256,30 +257,28 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
 template<typename T, typename Alloc>
 vector<T, Alloc>& vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
 {
-    // Уничтожаем старые элементы
-    for (size_type i = 0; i < size_; ++i) {
+    for (size_type i = 0; i < size_; ++i)
+    {
         traits_type::destroy(alloc_, data_ + i);
     }
 
     size_type new_size = il.size();
 
-    // Если нужно больше памяти - перевыделяем
-    if (new_size > capacity_) {
-        if (data_ != nullptr) {
+    if (new_size > capacity_)
+    {
+        if (data_ != nullptr)
+        {
             alloc_.deallocate(data_, capacity_);
         }
         capacity_ = new_size;
         data_ = alloc_.allocate(capacity_);
     }
 
-    // Копируем элементы из initializer_list
     size_ = new_size;
     std::uninitialized_copy(il.begin(), il.end(), data_);
 
     return *this;
 }
-
-// ==================== ДОСТУП К ЭЛЕМЕНТАМ ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
@@ -342,8 +341,6 @@ typename vector<T, Alloc>::const_pointer vector<T, Alloc>::data() const noexcept
 {
     return data_;
 }
-
-// ==================== ИТЕРАТОРЫ ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::begin() noexcept
@@ -417,8 +414,6 @@ typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::crend() cons
     return const_reverse_iterator(begin());
 }
 
-// ==================== CAPACITY ====================
-
 template<typename T, typename Alloc>
 bool vector<T, Alloc>::empty() const noexcept
 {
@@ -432,36 +427,36 @@ typename vector<T, Alloc>::size_type vector<T, Alloc>::size() const noexcept
 }
 
 template<typename T, typename Alloc>
-typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept {
+typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept
+{
     return traits_type::max_size(alloc_);
 }
 
 template<typename T, typename Alloc>
 void vector<T, Alloc>::reserve(size_type new_cap)
 {
-    if (new_cap <= capacity_) {
-        return; // Уже достаточно памяти
+    if (new_cap <= capacity_)
+    {
+        return;
     }
 
-    // Выделяем новую память
     pointer new_data = alloc_.allocate(new_cap);
 
-    // Перемещаем элементы в новую память
-    for (size_type i = 0; i < size_; ++i) {
+    for (size_type i = 0; i < size_; ++i)
+    {
         traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
     }
 
-    // Уничтожаем старые элементы
-    for (size_type i = 0; i < size_; ++i) {
+    for (size_type i = 0; i < size_; ++i)
+    {
         traits_type::destroy(alloc_, data_ + i);
     }
 
-    // Освобождаем старую память
-    if (data_ != nullptr) {
+    if (data_ != nullptr)
+    {
         alloc_.deallocate(data_, capacity_);
     }
 
-    // Обновляем указатели
     data_ = new_data;
     capacity_ = new_cap;
 }
