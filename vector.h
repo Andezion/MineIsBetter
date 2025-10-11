@@ -120,20 +120,37 @@ public:
 
     allocator_type get_allocator() const noexcept;
 
-    friend bool operator==(const vector& lhs, const vector& rhs) {
-        if (lhs.size() != rhs.size()) return false;
+    friend bool operator==(const vector& lhs, const vector& rhs)
+    {
+        if (lhs.size() != rhs.size())
+        {
+            return false;
+        }
         return std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
 
-    friend bool operator!=(const vector& lhs, const vector& rhs) { return !(lhs == rhs); }
+    friend bool operator!=(const vector& lhs, const vector& rhs)
+    {
+        return !(lhs == rhs);
+    }
 
-    friend bool operator<(const vector& lhs, const vector& rhs) {
+    friend bool operator<(const vector& lhs, const vector& rhs)
+    {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
 
-    friend bool operator>(const vector& lhs, const vector& rhs) { return rhs < lhs; }
-    friend bool operator<=(const vector& lhs, const vector& rhs) { return !(rhs < lhs); }
-    friend bool operator>=(const vector& lhs, const vector& rhs) { return !(lhs < rhs); }
+    friend bool operator>(const vector& lhs, const vector& rhs)
+    {
+        return rhs < lhs;
+    }
+    friend bool operator<=(const vector& lhs, const vector& rhs)
+    {
+        return !(rhs < lhs);
+    }
+    friend bool operator>=(const vector& lhs, const vector& rhs)
+    {
+        return !(lhs < rhs);
+    }
 
 private:
     allocator_type alloc_;
@@ -158,64 +175,62 @@ private:
     void check_range(size_type pos) const;
 };
 
-
-// ==================== КОНСТРУКТОРЫ ====================
-
 template<typename T, typename Alloc>
 vector<T, Alloc>::vector(const vector &other)
     : alloc_(traits_type::select_on_container_copy_construction(other.alloc_))
     , size_(other.size_)
     , capacity_(other.capacity_)
 {
-    if (capacity_ > 0) {
+    if (capacity_ > 0)
+    {
         data_ = alloc_.allocate(capacity_);
         std::uninitialized_copy(other.begin(), other.end(), data_);
     }
 }
 
-// ==================== ДЕСТРУКТОР ====================
-
 template<typename T, typename Alloc>
 vector<T, Alloc>::~vector()
 {
-    if (data_ != nullptr) {
-        // Сначала уничтожаем все живые элементы
-        for (size_type i = 0; i < size_; ++i) {
+    if (data_ != nullptr)
+    {
+        for (size_type i = 0; i < size_; ++i)
+        {
             traits_type::destroy(alloc_, data_ + i);
         }
-        // Потом освобождаем память
         alloc_.deallocate(data_, capacity_);
     }
 }
 
-// ==================== ОПЕРАТОРЫ ПРИСВАИВАНИЯ ====================
-
 template<typename T, typename Alloc>
 vector<T, Alloc>& vector<T, Alloc>::operator=(const vector &other)
 {
-    if (this != &other) {
-        // Уничтожаем старые элементы
-        for (size_type i = 0; i < size_; ++i) {
+    if (this != &other)
+    {
+        for (size_type i = 0; i < size_; ++i)
+        {
             traits_type::destroy(alloc_, data_ + i);
         }
 
-        // Освобождаем старую память
-        if (data_ != nullptr) {
+        if (data_ != nullptr)
+        {
             alloc_.deallocate(data_, capacity_);
         }
 
-        // Копируем аллокатор если надо
-        if (traits_type::propagate_on_container_copy_assignment::value) {
+        if (traits_type::propagate_on_container_copy_assignment::value)
+        {
             alloc_ = other.alloc_;
         }
 
         size_ = other.size_;
         capacity_ = other.capacity_;
 
-        if (capacity_ > 0) {
+        if (capacity_ > 0)
+        {
             data_ = alloc_.allocate(capacity_);
             std::uninitialized_copy(other.begin(), other.end(), data_);
-        } else {
+        }
+        else
+        {
             data_ = nullptr;
         }
     }
