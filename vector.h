@@ -520,38 +520,46 @@ void vector<T, Alloc>::clear() noexcept
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos, const value_type &value)
 {
-    // Вычисляем позицию как индекс
     size_type index = pos - begin();
 
-    // Если нужно больше места - перевыделяем
-    if (size_ == capacity_) {
-        size_type new_cap = capacity_ == 0 ? 1 : capacity_ * 2;
+    if (size_ == capacity_)
+    {
+        size_type new_cap;
+        if (capacity_ == 0)
+        {
+            new_cap = 1;
+        }
+        else
+        {
+            new_cap = capacity_ * 2;
+        }
         reserve(new_cap);
     }
 
-    // Сдвигаем элементы вправо (с конца)
-    for (size_type i = size_; i > index; --i) {
-        if (i == size_) {
-            // Construct новый элемент в конце
+    for (size_type i = size_; i > index; --i)
+    {
+        if (i == size_)
+        {
             traits_type::construct(alloc_, data_ + i, std::move_if_noexcept(data_[i - 1]));
-        } else {
-            // Move assignment для существующих
+        }
+        else
+        {
             data_[i] = std::move_if_noexcept(data_[i - 1]);
         }
     }
 
-    // Вставляем новый элемент
-    if (index < size_) {
-        data_[index] = value; // Assignment
-    } else {
-        traits_type::construct(alloc_, data_ + index, value); // Construct
+    if (index < size_)
+    {
+        data_[index] = value;
+    }
+    else
+    {
+        traits_type::construct(alloc_, data_ + index, value);
     }
     ++size_;
 
     return begin() + index;
 }
-
-// ==================== GETTER ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
