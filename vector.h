@@ -475,24 +475,28 @@ typename vector<T, Alloc>::size_type vector<T, Alloc>::capacity() const noexcept
 template<typename T, typename Alloc>
 void vector<T, Alloc>::shrink_to_fit()
 {
-    if (capacity_ > size_) {
-        if (size_ == 0) {
-            // Особый случай: пустой вектор
-            if (data_ != nullptr) {
+    if (capacity_ > size_)
+    {
+        if (size_ == 0)
+        {
+            if (data_ != nullptr)
+            {
                 alloc_.deallocate(data_, capacity_);
                 data_ = nullptr;
                 capacity_ = 0;
             }
-        } else {
+        }
+        else
+        {
             pointer new_data = alloc_.allocate(size_);
 
-            // Перемещаем элементы
-            for (size_type i = 0; i < size_; ++i) {
+            for (size_type i = 0; i < size_; ++i)
+            {
                 traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
             }
 
-            // Уничтожаем старые элементы
-            for (size_type i = 0; i < size_; ++i) {
+            for (size_type i = 0; i < size_; ++i)
+            {
                 traits_type::destroy(alloc_, data_ + i);
             }
 
@@ -504,17 +508,14 @@ void vector<T, Alloc>::shrink_to_fit()
     }
 }
 
-// ==================== MODIFIERS ====================
-
 template<typename T, typename Alloc>
 void vector<T, Alloc>::clear() noexcept
 {
-    // Уничтожаем все элементы
-    for (size_type i = 0; i < size_; ++i) {
+    for (size_type i = 0; i < size_; ++i)
+    {
         traits_type::destroy(alloc_, data_ + i);
     }
     size_ = 0;
-    // НЕ освобождаем память! capacity остаётся прежним
 }
 
 template<typename T, typename Alloc>
