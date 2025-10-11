@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 
 
 template <typename T, typename Alloc = std::allocator<T>>
@@ -158,64 +159,63 @@ private:
 };
 
 
+// ==================== КОНСТРУКТОРЫ ====================
+
 template<typename T, typename Alloc>
 vector<T, Alloc>::vector(const vector &other)
     : alloc_(traits_type::select_on_container_copy_construction(other.alloc_))
     , size_(other.size_)
     , capacity_(other.capacity_)
 {
-    if (capacity_ > 0)
-    {
+    if (capacity_ > 0) {
         data_ = alloc_.allocate(capacity_);
         std::uninitialized_copy(other.begin(), other.end(), data_);
     }
 }
 
+// ==================== ДЕСТРУКТОР ====================
+
 template<typename T, typename Alloc>
 vector<T, Alloc>::~vector()
 {
-    if (data_ != nullptr)
-    {
-        for (size_type i = 0; i < size_; ++i)
-        {
+    if (data_ != nullptr) {
+        // Сначала уничтожаем все живые элементы
+        for (size_type i = 0; i < size_; ++i) {
             traits_type::destroy(alloc_, data_ + i);
         }
-
+        // Потом освобождаем память
         alloc_.deallocate(data_, capacity_);
     }
 }
 
+// ==================== ОПЕРАТОРЫ ПРИСВАИВАНИЯ ====================
 
 template<typename T, typename Alloc>
 vector<T, Alloc>& vector<T, Alloc>::operator=(const vector &other)
 {
-    if (this != &other)
-    {
-        for (size_type i = 0; i < size_; ++i)
-        {
+    if (this != &other) {
+        // Уничтожаем старые элементы
+        for (size_type i = 0; i < size_; ++i) {
             traits_type::destroy(alloc_, data_ + i);
         }
 
-        if (data_ != nullptr)
-        {
+        // Освобождаем старую память
+        if (data_ != nullptr) {
             alloc_.deallocate(data_, capacity_);
         }
 
-        if (traits_type::propagate_on_container_copy_assignment::value)
-        {
+        // Копируем аллокатор если надо
+        if (traits_type::propagate_on_container_copy_assignment::value) {
             alloc_ = other.alloc_;
         }
 
         size_ = other.size_;
         capacity_ = other.capacity_;
 
-        if (capacity_ > 0)
-        {
+        if (capacity_ > 0) {
             data_ = alloc_.allocate(capacity_);
             std::uninitialized_copy(other.begin(), other.end(), data_);
-        }
-        else
-        {
+        } else {
             data_ = nullptr;
         }
     }
@@ -227,19 +227,17 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
     traits_type::propagate_on_container_move_assignment::value ||
     std::is_nothrow_move_assignable<allocator_type>::value)
 {
-    if (this != &other)
-    {
+    if (this != &other) {
+        // Уничтожаем свои элементы и освобождаем память
         for (size_type i = 0; i < size_; ++i) {
             traits_type::destroy(alloc_, data_ + i);
         }
-
-        if (data_ != nullptr)
-        {
+        if (data_ != nullptr) {
             alloc_.deallocate(data_, capacity_);
         }
 
-        if (traits_type::propagate_on_container_move_assignment::value)
-        {
+        // Просто крадём данные из other
+        if (traits_type::propagate_on_container_move_assignment::value) {
             alloc_ = std::move(other.alloc_);
         }
 
@@ -247,6 +245,7 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
         size_ = other.size_;
         capacity_ = other.capacity_;
 
+        // Оставляем other в валидном пустом состоянии
         other.data_ = nullptr;
         other.size_ = 0;
         other.capacity_ = 0;
@@ -257,28 +256,30 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(vector &&other) noexcept(
 template<typename T, typename Alloc>
 vector<T, Alloc>& vector<T, Alloc>::operator=(std::initializer_list<value_type> il)
 {
-    for (size_type i = 0; i < size_; ++i)
-    {
+    // Уничтожаем старые элементы
+    for (size_type i = 0; i < size_; ++i) {
         traits_type::destroy(alloc_, data_ + i);
     }
 
     size_type new_size = il.size();
 
-    if (new_size > capacity_)
-    {
-        if (data_ != nullptr)
-        {
+    // Если нужно больше памяти - перевыделяем
+    if (new_size > capacity_) {
+        if (data_ != nullptr) {
             alloc_.deallocate(data_, capacity_);
         }
         capacity_ = new_size;
         data_ = alloc_.allocate(capacity_);
     }
 
+    // Копируем элементы из initializer_list
     size_ = new_size;
     std::uninitialized_copy(il.begin(), il.end(), data_);
 
     return *this;
 }
+
+// ==================== ДОСТУП К ЭЛЕМЕНТАМ ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
@@ -290,46 +291,44 @@ typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reference vector<T, Alloc>::at(size_type pos) const
 {
-    return const_reference(at(pos));
+    check_range(pos);
+    return data_[pos];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::operator[](size_type pos) noexcept
 {
-    check_range(pos);
-    return reference(*(data_ + pos));
+    return data_[pos];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reference vector<T, Alloc>::operator[](size_type pos) const noexcept
 {
-    return const_reference(operator[](pos));
+    return data_[pos];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::front()
 {
-    check_range(0);
     return data_[0];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reference vector<T, Alloc>::front() const
 {
-    return const_reference(front());
+    return data_[0];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::back()
 {
-    check_range(size_ - 1);
     return data_[size_ - 1];
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reference vector<T, Alloc>::back() const
 {
-    return const_reference(back());
+    return data_[size_ - 1];
 }
 
 template<typename T, typename Alloc>
@@ -341,45 +340,45 @@ typename vector<T, Alloc>::pointer vector<T, Alloc>::data() noexcept
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_pointer vector<T, Alloc>::data() const noexcept
 {
-    return const_pointer(data());
+    return data_;
 }
+
+// ==================== ИТЕРАТОРЫ ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::begin() noexcept
 {
-    check_range(0);
     return data_;
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_iterator vector<T, Alloc>::begin() const noexcept
 {
-    return const_iterator(begin());
+    return data_;
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_iterator vector<T, Alloc>::cbegin() const noexcept
 {
-    return const_iterator(begin());
+    return data_;
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::end() noexcept
 {
-    check_range(size_ - 1);
     return data_ + size_;
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_iterator vector<T, Alloc>::end() const noexcept
 {
-    return const_iterator(end());
+    return data_ + size_;
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_iterator vector<T, Alloc>::cend() const noexcept
 {
-    return const_iterator(cend());
+    return data_ + size_;
 }
 
 template<typename T, typename Alloc>
@@ -391,13 +390,13 @@ typename vector<T, Alloc>::reverse_iterator vector<T, Alloc>::rbegin() noexcept
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::rbegin() const noexcept
 {
-    return const_reverse_iterator(cend());
+    return const_reverse_iterator(end());
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::crbegin() const noexcept
 {
-    return const_reverse_iterator(cend());
+    return const_reverse_iterator(end());
 }
 
 template<typename T, typename Alloc>
@@ -409,14 +408,16 @@ typename vector<T, Alloc>::reverse_iterator vector<T, Alloc>::rend() noexcept
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::rend() const noexcept
 {
-    return const_reverse_iterator(cbegin());
+    return const_reverse_iterator(begin());
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::const_reverse_iterator vector<T, Alloc>::crend() const noexcept
 {
-    return const_reverse_iterator(cbegin());
+    return const_reverse_iterator(begin());
 }
+
+// ==================== CAPACITY ====================
 
 template<typename T, typename Alloc>
 bool vector<T, Alloc>::empty() const noexcept
@@ -432,23 +433,38 @@ typename vector<T, Alloc>::size_type vector<T, Alloc>::size() const noexcept
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::size_type vector<T, Alloc>::max_size() const noexcept {
-    return std::allocator_traits<Alloc>::max_size(Alloc());
+    return traits_type::max_size(alloc_);
 }
 
 template<typename T, typename Alloc>
 void vector<T, Alloc>::reserve(size_type new_cap)
 {
-    check_range(new_cap);
-    if (size_ < new_cap)
-    {
-        std::allocator_traits<Alloc>::deallocate(Alloc(), data_, new_cap);
+    if (new_cap <= capacity_) {
+        return; // Уже достаточно памяти
     }
-    else
-    {
-        std::allocator_traits<Alloc>::deallocate(Alloc(), data_, size_);
-    }
-}
 
+    // Выделяем новую память
+    pointer new_data = alloc_.allocate(new_cap);
+
+    // Перемещаем элементы в новую память
+    for (size_type i = 0; i < size_; ++i) {
+        traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+    }
+
+    // Уничтожаем старые элементы
+    for (size_type i = 0; i < size_; ++i) {
+        traits_type::destroy(alloc_, data_ + i);
+    }
+
+    // Освобождаем старую память
+    if (data_ != nullptr) {
+        alloc_.deallocate(data_, capacity_);
+    }
+
+    // Обновляем указатели
+    data_ = new_data;
+    capacity_ = new_cap;
+}
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::size_type vector<T, Alloc>::capacity() const noexcept
@@ -459,44 +475,83 @@ typename vector<T, Alloc>::size_type vector<T, Alloc>::capacity() const noexcept
 template<typename T, typename Alloc>
 void vector<T, Alloc>::shrink_to_fit()
 {
-    if (capacity_ > size_)
-    {
-        T* new_data = alloc_.allocate(size_);
+    if (capacity_ > size_) {
+        if (size_ == 0) {
+            // Особый случай: пустой вектор
+            if (data_ != nullptr) {
+                alloc_.deallocate(data_, capacity_);
+                data_ = nullptr;
+                capacity_ = 0;
+            }
+        } else {
+            pointer new_data = alloc_.allocate(size_);
 
-        for (size_type i = 0; i < size_; ++i)
-        {
-            std::allocator_traits<Alloc>::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+            // Перемещаем элементы
+            for (size_type i = 0; i < size_; ++i) {
+                traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+            }
+
+            // Уничтожаем старые элементы
+            for (size_type i = 0; i < size_; ++i) {
+                traits_type::destroy(alloc_, data_ + i);
+            }
+
+            alloc_.deallocate(data_, capacity_);
+
+            data_ = new_data;
+            capacity_ = size_;
         }
-
-        for (size_type i = 0; i < size_; ++i)
-        {
-            std::allocator_traits<Alloc>::destroy(alloc_, data_ + i);
-        }
-
-        alloc_.deallocate(data_, capacity_);
-
-        data_ = new_data;
-        capacity_ = size_;
     }
 }
+
+// ==================== MODIFIERS ====================
 
 template<typename T, typename Alloc>
 void vector<T, Alloc>::clear() noexcept
 {
-    if (data_ != nullptr)
-    {
-        alloc_.deallocate(data_, capacity_);
+    // Уничтожаем все элементы
+    for (size_type i = 0; i < size_; ++i) {
+        traits_type::destroy(alloc_, data_ + i);
     }
     size_ = 0;
-    capacity_ = 0;
-    data_ = nullptr;
+    // НЕ освобождаем память! capacity остаётся прежним
 }
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos, const value_type &value)
 {
+    // Вычисляем позицию как индекс
+    size_type index = pos - begin();
 
+    // Если нужно больше места - перевыделяем
+    if (size_ == capacity_) {
+        size_type new_cap = capacity_ == 0 ? 1 : capacity_ * 2;
+        reserve(new_cap);
+    }
+
+    // Сдвигаем элементы вправо (с конца)
+    for (size_type i = size_; i > index; --i) {
+        if (i == size_) {
+            // Construct новый элемент в конце
+            traits_type::construct(alloc_, data_ + i, std::move_if_noexcept(data_[i - 1]));
+        } else {
+            // Move assignment для существующих
+            data_[i] = std::move_if_noexcept(data_[i - 1]);
+        }
+    }
+
+    // Вставляем новый элемент
+    if (index < size_) {
+        data_[index] = value; // Assignment
+    } else {
+        traits_type::construct(alloc_, data_ + index, value); // Construct
+    }
+    ++size_;
+
+    return begin() + index;
 }
+
+// ==================== GETTER ====================
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
@@ -509,12 +564,21 @@ void vector<T, Alloc>::deallocate(pointer p, size_type n) noexcept
 {
     if (p != nullptr)
     {
-        std::allocator_traits<Alloc>::deallocate(Alloc(), p, n);
+        alloc_.deallocate(p, n);
+    }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::check_range(size_type pos) const
+{
+    if (pos >= size_)
+    {
+        throw std::out_of_range("vector::check_range: pos >= size()");
     }
 }
 
 template <typename T, typename Alloc>
-void swap(vector<T,Alloc>& a, vector<T,Alloc>& b) noexcept(noexcept(a.swap(b))) {
+void swap(vector<T,Alloc>& a, vector<T,Alloc>& b) noexcept(noexcept(a.swap(b)))
+{
     a.swap(b);
 }
-
