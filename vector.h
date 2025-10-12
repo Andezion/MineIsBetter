@@ -5,8 +5,8 @@
 #include <type_traits>
 #include <initializer_list>
 #include <algorithm>
-#include <limits>
 #include <stdexcept>
+#include <bits/stl_construct.h>
 
 
 template <typename T, typename Alloc = std::allocator<T>>
@@ -573,9 +573,105 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos,
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos, value_type &&value)
+{
+    size_type index = pos - begin();
+    if (size_ == capacity_)
+    {
+        size_type new_cap;
+        if (capacity_ == 0)
+        {
+            new_cap = 1;
+        }
+        else
+        {
+            new_cap = capacity_ * 2;
+        }
+        reserve(new_cap);
+    }
+
+    for (size_type i = size_; i > index; --i)
+    {
+        if (i == size_)
+        {
+            traits_type::construct(alloc_, data_ + i, std::move_if_noexcept(data_[i - 1]));
+        }
+        else
+        {
+            data_[i] = std::move_if_noexcept(data_[i - 1]);
+        }
+    }
+
+    if (index < size_)
+    {
+        data_[index] = std::move_if_noexcept(value);
+    }
+    else
+    {
+        traits_type::construct(alloc_, data_ + index, value);
+    }
+    ++size_;
+
+    return begin() + index;
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::resize(size_type count)
+{
+    if (count == size_)
+    {
+        return;
+    }
+
+    if (count < size_)
+    {
+        for (size_type i = count; i < size_; ++i)
+        {
+            (data_ + i)->~T();
+        }
+        size_ = count;
+    }
+    else
+    {
+        if (count > capacity_)
+        {
+            size_type new_capacity = std::max(count, capacity_ * 2);
+            T* new_data = alloc_.allocate(new_capacity);
+
+            for (size_type i = 0; i < size_; ++i)
+            {
+                new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                (data_ + i)->~T();
+            }
+
+            if (data_ != nullptr)
+            {
+                alloc_.deallocate(data_, capacity_);
+            }
+
+            data_ = new_data;
+            capacity_ = new_capacity;
+        }
+
+        for (size_type i = size_; i < count; ++i)
+        {
+            new (data_ + i) T();
+        }
+
+        size_ = count;
+    }
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
 {
     return alloc_;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::pointer vector<T, Alloc>::allocate(size_type n)
+{
+    return traits_type::allocate(n);
 }
 
 template<typename T, typename Alloc>
