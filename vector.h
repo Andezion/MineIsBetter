@@ -663,6 +663,48 @@ void vector<T, Alloc>::resize(size_type count)
 }
 
 template<typename T, typename Alloc>
+void vector<T, Alloc>::resize(size_type count, const value_type &value)
+{
+    if (count < size_)
+    {
+        for (size_type i = count; i < size_; ++i)
+        {
+            (data_ + i)->~T();
+        }
+        size_ = count;
+    }
+    else if (count > size_)
+    {
+        if (count > capacity_)
+        {
+            size_type new_capacity = std::max(count, capacity_ * 2);
+            T* new_data = alloc_.allocate(new_capacity);
+
+            for (size_type i = 0; i < size_; ++i)
+            {
+                new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                (data_ + i)->~T();
+            }
+
+            if (data_ != nullptr)
+            {
+                alloc_.deallocate(data_, capacity_);
+            }
+
+            data_ = new_data;
+            capacity_ = new_capacity;
+        }
+
+        for (size_type i = size_; i < count; ++i)
+        {
+            new (data_ + i) T(value);
+        }
+
+        size_ = count;
+    }
+}
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::allocator_type vector<T, Alloc>::get_allocator() const noexcept
 {
     return alloc_;
@@ -680,6 +722,15 @@ void vector<T, Alloc>::deallocate(pointer p, size_type n) noexcept
     if (p != nullptr)
     {
         alloc_.deallocate(p, n);
+    }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::destroy_elements(pointer first, pointer last) noexcept
+{
+    for (pointer p = first; p != last; ++p)
+    {
+        traits_type::destroy(p, p);
     }
 }
 
