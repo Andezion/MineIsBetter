@@ -6,8 +6,6 @@
 #include <initializer_list>
 #include <algorithm>
 #include <stdexcept>
-#include <bits/stl_construct.h>
-
 
 template <typename T, typename Alloc = std::allocator<T>>
 class vector {
@@ -77,7 +75,7 @@ public:
     const_reverse_iterator rend() const noexcept;
     const_reverse_iterator crend() const noexcept;
 
-    bool        empty() const noexcept;
+    [[nodiscard]] bool        empty() const noexcept;
     size_type   size() const noexcept;
     size_type   max_size() const noexcept;
     void        reserve(size_type new_cap);
@@ -613,6 +611,79 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos,
     ++size_;
 
     return begin() + index;
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::push_back(const value_type& value)
+{
+    if (size_ >= capacity_)
+    {
+        size_type new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
+        T * new_data = alloc_.allocate(new_cap);
+
+        for (size_type i = 0; i < size_; ++i)
+        {
+            traits_type::construct(alloc_, new_data + i, data_[i]);
+            traits_type::destroy(alloc_, data_ + i);
+        }
+
+        if (data_ != nullptr)
+        {
+            alloc_.deallocate(data_, capacity_);
+        }
+
+        data_ = new_data;
+        capacity_ = new_cap;
+    }
+
+    traits_type::construct(alloc_, data_ + size_, value);
+    ++size_;
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::push_back(value_type&& value)
+{
+    if (size_ >= capacity_)
+    {
+        size_type new_cap;
+        if (capacity_ == 0)
+        {
+            new_cap = 1;
+        }
+        else
+        {
+            new_cap = capacity_ * 2;
+        }
+        T * new_data = alloc_.allocate(new_cap);
+
+        for (size_type i = 0; i < size_; ++i)
+        {
+            traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+            traits_type::destroy(alloc_, data_ + i);
+        }
+
+        if (data_ != nullptr)
+        {
+            alloc_.deallocate(data_, capacity_);
+        }
+
+        data_ = new_data;
+        capacity_ = new_cap;
+    }
+
+    traits_type::construct(alloc_, data_ + size_, std::move(value));
+    ++size_;
+}
+
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::pop_back()
+{
+    if (size_ > 0)
+    {
+        --size_;
+        std::allocator_traits<Alloc>::destroy(alloc_, data_ + size_);
+    }
 }
 
 template<typename T, typename Alloc>
