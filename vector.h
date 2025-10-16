@@ -34,7 +34,7 @@ public:
     vector(std::initializer_list<value_type> il, const allocator_type& alloc = allocator_type());
     vector(const vector& other);
     vector(const vector& other, const allocator_type& alloc);
-    vector(vector&& other) noexcept(std::is_nothrow_move_constructible<allocator_type>::value);
+    vector(vector&& other) noexcept(std::is_nothrow_move_constructible_v<allocator_type>);
     vector(vector&& other, const allocator_type& alloc);
 
     ~vector();
@@ -42,11 +42,11 @@ public:
     vector& operator=(const vector& other);
     vector& operator=(vector&& other) noexcept(
         std::allocator_traits<allocator_type>::propagate_on_container_move_assignment::value ||
-        std::is_nothrow_move_assignable<allocator_type>::value);
+        std::is_nothrow_move_assignable_v<allocator_type>);
     vector& operator=(std::initializer_list<value_type> il);
 
     template <typename InputIt,
-              typename = std::enable_if_t<!std::is_integral<InputIt>::value>>
+              typename = std::enable_if_t<!std::is_integral_v<InputIt>>>
     void assign(InputIt first, InputIt last);
     void assign(size_type n, const value_type& val);
     void assign(std::initializer_list<value_type> il);
@@ -183,6 +183,52 @@ vector<T, Alloc>::vector(const vector &other)
     {
         data_ = alloc_.allocate(capacity_);
         std::uninitialized_copy(other.begin(), other.end(), data_);
+    }
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(const vector &other, const allocator_type &alloc)
+    : alloc_(alloc)
+{
+    size_ = other.size();
+    capacity_ = size_;
+    data_ = alloc_.allocate(capacity_);
+    std::uninitialized_copy(other.begin(), other.end(), data_);
+}
+
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(vector &&other) noexcept
+    : alloc_(std::move(other.alloc_)),
+      data_(other.data_),
+      size_(other.size_),
+      capacity_(other.capacity_)
+{
+    other.data_ = nullptr;
+    other.size_ = 0;
+    other.capacity_ = 0;
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(vector &&other, const allocator_type &alloc)
+    : alloc_(alloc)
+{
+    if (alloc_ == other.alloc_)
+    {
+        data_ = other.data_;
+        size_ = other.size_;
+        capacity_ = other.capacity_;
+
+        other.data_ = nullptr;
+        other.size_ = 0;
+        other.capacity_ = 0;
+    }
+    else
+    {
+        size_ = other.size_;
+        capacity_ = size_;
+        data_ = alloc_.allocate(capacity_);
+        std::uninitialized_move(other.begin(), other.end(), data_);
     }
 }
 
