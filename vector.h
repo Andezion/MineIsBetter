@@ -660,6 +660,57 @@ typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos,
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator vector<T, Alloc>::insert(const_iterator pos, size_type n, const value_type &value)
+{
+    size_type index = pos - begin();
+    if (size_ == capacity_ + n)
+    {
+        size_type new_cap;
+        if (capacity_ == 0)
+        {
+            new_cap = 1;
+        }
+        else
+        {
+            new_cap = (capacity_ + n) * 2;
+        }
+        reserve(new_cap);
+    }
+
+    for (size_type i = size_; i > index; --i)
+    {
+        if (i == size_)
+        {
+            traits_type::construct(alloc_, data_ + i, std::move_if_noexcept(data_[i - 1]));
+        }
+        else
+        {
+            data_[i] = std::move_if_noexcept(data_[i - 1]);
+        }
+    }
+
+    if (index < size_)
+    {
+        size_type m = n;
+        while (m--)
+        {
+            data_[index++] = std::move_if_noexcept(value);
+        }
+    }
+    else
+    {
+        size_type m = n;
+        while (m--)
+        {
+            traits_type::construct(alloc_, data_ + index++, value);
+        }
+    }
+    size_ += n;
+
+    return begin() + index;
+}
+
+template<typename T, typename Alloc>
 void vector<T, Alloc>::push_back(const value_type& value)
 {
     if (size_ >= capacity_)
