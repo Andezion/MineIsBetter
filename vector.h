@@ -161,7 +161,8 @@ private:
 
     void destroy_elements(pointer first, pointer last) noexcept;
     void move_range(pointer dest, pointer first, pointer last) noexcept;
-    void copy_range(pointer dest, const_pointer first, const_pointer last);
+
+    static void copy_range(pointer dest, const_pointer first, const_pointer last);
     void reallocate_grow(size_type new_cap);
 
     template <typename InputIt>
@@ -879,6 +880,40 @@ void vector<T, Alloc>::destroy_elements(pointer first, pointer last) noexcept
     {
         traits_type::destroy(p, p);
     }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::move_range(pointer dest, pointer first, pointer last) noexcept
+{
+    for (; first != last; ++first, ++dest)::new (static_cast<void*>(dest)) T(std::move(*first));
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::copy_range(pointer dest, const_pointer first, const_pointer last)
+{
+    for (; first != last; ++first, ++dest)
+        ::new (static_cast<void*>(dest)) T(*first);
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::reallocate_grow(size_type new_cap)
+{
+    pointer new_data = traits_type::allocate(alloc_, new_cap);
+
+    move_range(new_data, data_, data_ + size_);
+
+    for (size_type i = 0; i < size_; ++i)
+    {
+        traits_type::destroy(alloc_, data_ + i);
+    }
+
+    if (data_)
+    {
+        traits_type::deallocate(alloc_, data_, capacity_);
+    }
+
+    data_ = new_data;
+    capacity_ = new_cap;
 }
 
 template<typename T, typename Alloc>
