@@ -917,6 +917,22 @@ void vector<T, Alloc>::reallocate_grow(size_type new_cap)
 }
 
 template<typename T, typename Alloc>
+void vector<T, Alloc>::swap_alloc_and_data(vector &other) noexcept
+{
+    using std::swap;
+
+    swap(data_, other.data_);
+    swap(size_, other.size_);
+    swap(capacity_, other.capacity_);
+
+    if constexpr (std::allocator_traits<Alloc>::propagate_on_container_swap::value)
+    {
+        swap(alloc_, other.alloc_);
+    }
+}
+
+
+template<typename T, typename Alloc>
 void vector<T, Alloc>::check_range(size_type pos) const
 {
     if (pos >= size_)
