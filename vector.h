@@ -764,6 +764,53 @@ void vector<T, Alloc>::pop_back()
 }
 
 template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator
+vector<T, Alloc>::erase(const_iterator pos)
+{
+    size_type index = pos - begin();
+    pointer p = data_ + index;
+
+    std::destroy_at(p);
+
+    if (index < size_ - 1)
+    {
+        std::move(p + 1, data_ + size_, p);
+    }
+
+    --size_;
+
+    return begin() + index;
+}
+
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator
+vector<T, Alloc>::erase(const_iterator first, const_iterator last)
+{
+    size_type start = first - begin();
+    size_type count = last - first;
+
+    if (count == 0)
+    {
+        return begin() + start;
+    }
+
+    pointer p_first = data_ + start;
+    pointer p_last  = p_first + count;
+
+    std::destroy(p_first, p_last);
+
+    if (start + count < size_)
+    {
+        std::move(p_last, data_ + size_, p_first);
+    }
+
+    size_ -= count;
+
+    return begin() + start;
+}
+
+
+template<typename T, typename Alloc>
 void vector<T, Alloc>::resize(size_type count)
 {
     if (count == size_)
