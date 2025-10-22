@@ -689,6 +689,31 @@ vector<T, Alloc>::insert(const_iterator pos, size_type n, const value_type &valu
     return begin() + insert_pos;
 }
 
+template<typename T, typename Alloc>
+template<typename InputIt, typename>
+typename vector<T, Alloc>::iterator
+vector<T, Alloc>::insert(const_iterator pos, InputIt first, InputIt last)
+{
+    size_type insert_pos = pos - data_;
+    size_type count = std::distance(first, last);
+
+    if (count == 0) return data_ + insert_pos;
+
+    if (size_ + count > capacity_)
+    {
+        reallocate_grow(size_ + count);
+    }
+
+    pointer insert_ptr = data_ + insert_pos;
+    move_range(insert_ptr + count, insert_ptr, data_ + size_);
+
+    copy_range(insert_ptr, first, last);
+
+    size_ += count;
+    return insert_ptr;
+}
+
+
 
 template<typename T, typename Alloc>
 void vector<T, Alloc>::push_back(const value_type& value)
