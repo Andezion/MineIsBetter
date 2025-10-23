@@ -989,6 +989,35 @@ void vector<T, Alloc>::reallocate_grow(size_type new_cap)
 }
 
 template<typename T, typename Alloc>
+template<typename InputIt>
+void vector<T, Alloc>::construct_from_range(InputIt first, InputIt last, std::true_type)
+{
+    size_ = static_cast<size_type>(first);
+    capacity_ = size_;
+    data_ = alloc_.allocate(capacity_);
+
+    for (size_type i = 0; i < size_; ++i)
+    {
+        alloc_.construct(data_ + i, static_cast<T>(last));
+    }
+}
+
+template<typename T, typename Alloc>
+template<typename InputIt>
+void vector<T, Alloc>::construct_from_range(InputIt first, InputIt last, std::false_type)
+{
+    size_ = std::distance(first, last);
+    capacity_ = size_;
+    data_ = alloc_.allocate(capacity_);
+
+    size_type i = 0;
+    for (auto it = first; it != last; ++it, ++i)
+    {
+        alloc_.construct(data_ + i, *it);
+    }
+}
+
+template<typename T, typename Alloc>
 void vector<T, Alloc>::swap_alloc_and_data(vector &other) noexcept
 {
     using std::swap;
