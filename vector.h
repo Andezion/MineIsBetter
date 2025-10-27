@@ -713,6 +713,34 @@ vector<T, Alloc>::insert(const_iterator pos, InputIt first, InputIt last)
     return insert_ptr;
 }
 
+template<typename T, typename Alloc>
+typename vector<T, Alloc>::iterator
+vector<T, Alloc>::insert(const_iterator pos, std::initializer_list<value_type> il)
+{
+    return insert(pos, il.begin(), il.end());
+}
+
+template<typename T, typename Alloc>
+template<class ... Args>
+typename vector<T, Alloc>::iterator
+vector<T, Alloc>::emplace(const_iterator pos, Args &&...args)
+{
+    size_type insert_pos = pos - data_;
+
+    if (size_ == capacity_)
+    {
+        reallocate_grow(size_ + 1);
+    }
+
+    pointer insert_ptr = data_ + insert_pos;
+
+    move_range(insert_ptr + 1, insert_ptr, data_ + size_);
+
+    alloc_.construct(insert_ptr, std::forward<Args>(args)...);
+
+    ++size_;
+    return insert_ptr;
+}
 
 
 template<typename T, typename Alloc>
