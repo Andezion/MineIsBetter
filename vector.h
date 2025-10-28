@@ -341,6 +341,44 @@ vector<T, Alloc>& vector<T, Alloc>::operator=(std::initializer_list<value_type> 
 }
 
 template<typename T, typename Alloc>
+template<typename InputIt, typename>
+void vector<T, Alloc>::assign(InputIt first, InputIt last)
+{
+    clear();
+    size_type new_size = std::distance(first, last);
+    if (new_size > capacity_)
+    {
+        alloc_.deallocate(data_, capacity_);
+        data_ = alloc_.allocate(new_size);
+        capacity_ = new_size;
+    }
+    size_ = new_size;
+    std::uninitialized_copy(first, last, data_);
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::assign(size_type n, const value_type &val)
+{
+    clear();
+    if (n > capacity_)
+    {
+        alloc_.deallocate(data_, capacity_);
+        data_ = alloc_.allocate(n);
+        capacity_ = n;
+    }
+
+    size_ = n;
+    std::uninitialized_fill_n(data_, n, val);
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::assign(std::initializer_list<value_type> il)
+{
+    assign(il.begin(), il.end());
+}
+
+
+template<typename T, typename Alloc>
 typename vector<T, Alloc>::reference vector<T, Alloc>::at(size_type pos)
 {
     check_range(pos);
