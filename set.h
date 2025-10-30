@@ -34,7 +34,7 @@ private:
         Node* parent;
         bool is_black;
 
-        Node(const value_type& val)
+        explicit Node(const value_type& val)
             : value(val), left(nullptr), right(nullptr), parent(nullptr), is_black(false) {}
     };
 
@@ -82,7 +82,7 @@ public:
         using reference = const T&;
 
         const_iterator() : node_(nullptr), tree_(nullptr) {}
-        const_iterator(const iterator& it);
+        explicit const_iterator(const iterator& it);
 
         reference operator*() const;
         pointer operator->() const;
@@ -149,9 +149,9 @@ public:
     const_reverse_iterator rend() const noexcept;
     const_reverse_iterator crend() const noexcept;
 
-    bool empty() const noexcept;
-    size_type size() const noexcept;
-    size_type max_size() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
+    [[nodiscard]] size_type size() const noexcept;
+    [[nodiscard]] size_type max_size() const noexcept;
 
     void clear() noexcept;
 
@@ -261,6 +261,36 @@ private:
     Compare comp_;
     NodeAllocator alloc_;
 };
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set()
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(Compare())
+    , alloc_(NodeAllocator())
+{
+
+}
+
+template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::empty() const noexcept
+{
+    return size_ == 0;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::size() const noexcept
+{
+    return size_;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::max_size() const noexcept
+{
+    return size_;
+}
 
 template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
