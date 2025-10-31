@@ -296,19 +296,55 @@ template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
+bool operator==(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return lhs.equals(rhs);
+}
+
+template<class T, class Compare, class Alloc>
 bool operator!=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
+
+template<class T, class Compare, class Alloc>
+bool operator!=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return !lhs.equals(rhs);
+}
 
 template<class T, class Compare, class Alloc>
 bool operator<(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
+bool operator<(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return lhs.less(rhs);
+}
+
+template<class T, class Compare, class Alloc>
 bool operator<=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
+
+template<class T, class Compare, class Alloc>
+bool operator<=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return lhs.less(rhs) || lhs.equals(rhs);
+}
 
 template<class T, class Compare, class Alloc>
 bool operator>(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
+bool operator>(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return rhs.less(lhs);
+}
+
+template<class T, class Compare, class Alloc>
 bool operator>=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
+
+template<class T, class Compare, class Alloc>
+bool operator>=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
+{
+    return rhs.less(lhs) || rhs.equals(rhs);
+}
 
 template<class T, class Compare, class Alloc>
 void swap(set<T, Compare, Alloc>& lhs, set<T, Compare, Alloc>& rhs) noexcept;
