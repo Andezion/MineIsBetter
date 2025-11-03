@@ -349,5 +349,11 @@ bool operator>=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> 
 template<class T, class Compare, class Alloc>
 void swap(set<T, Compare, Alloc>& lhs, set<T, Compare, Alloc>& rhs) noexcept;
 
+template<class T, class Compare, class Alloc>
+void swap(set<T, Compare, Alloc> &lhs, set<T, Compare, Alloc> &rhs) noexcept
+{
+    lhs.swap(rhs);
+}
+
 template<class T, class Compare, class Alloc, class Pred>
 typename set<T, Compare, Alloc>::size_type erase_if(set<T, Compare, Alloc>& c, Pred pred);

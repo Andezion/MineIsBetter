@@ -114,7 +114,7 @@ public:
 
     void swap(vector& other) noexcept(
         traits_type::propagate_on_container_swap::value ||
-        std::is_nothrow_swappable<allocator_type>::value);
+        std::is_nothrow_swappable_v<allocator_type>);
 
     allocator_type get_allocator() const noexcept;
 
@@ -987,6 +987,23 @@ void vector<T, Alloc>::resize(size_type count, const value_type &value)
         }
 
         size_ = count;
+    }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::swap(vector &other) noexcept(
+    std::allocator_traits<Alloc>::propagate_on_container_swap::value ||
+    std::is_nothrow_swappable_v<Alloc>)
+{
+    using std::swap;
+
+    swap(data_, other.data_);
+    swap(size_, other.size_);
+    swap(capacity_, other.capacity_);
+
+    if constexpr (std::allocator_traits<Alloc>::propagate_on_container_swap::value)
+    {
+        swap(alloc_, other.alloc_);
     }
 }
 
