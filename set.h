@@ -263,6 +263,95 @@ private:
 };
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator::reference set<T, Compare, Allocator>::iterator::operator*() const
+{
+    return node_->value;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator::pointer set<T, Compare, Allocator>::iterator::operator->() const
+{
+    return &node_->value;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator & set<T, Compare, Allocator>::iterator::operator++()
+{
+    if (node_->right)
+    {
+        node_ = node_->right;
+        while (node_->left)
+        {
+            node_ = node_->left;
+        }
+    }
+    else
+    {
+        Node* parent = node_->parent;
+        while (parent && node_ == parent->right)
+        {
+            node_ = parent;
+            parent = parent->parent;
+        }
+        node_ = parent;
+    }
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::iterator::operator++(int)
+{
+    iterator tmp = *this;
+    ++*this;
+    return tmp;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator & set<T, Compare, Allocator>::iterator::operator--()
+{
+    if (node_->left)
+    {
+        node_ = node_->left;
+        while (node_->right)
+        {
+            node_ = node_->right;
+        }
+    }
+    else
+    {
+        Node* parent = node_->parent;
+        while (parent && node_ == parent->left)
+        {
+            node_ = parent;
+            parent = parent->parent;
+        }
+        node_ = parent;
+    }
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::iterator::operator--(int)
+{
+    iterator tmp = *this;
+    --*this;
+    return tmp;
+}
+
+template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::iterator::operator==(const iterator &other) const
+{
+    return node_ == other.node_;
+}
+
+template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::iterator::operator!=(const iterator &other) const
+{
+    return node_ != other.node_;
+}
+
+
+template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set()
     : root_(nullptr)
     , leftmost_(nullptr)
