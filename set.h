@@ -364,6 +364,60 @@ set<T, Compare, Allocator>::set()
 }
 
 template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(const set &other)
+{
+    if (this == &other)
+    {
+        return *this;
+    }
+
+    clear();
+
+    alloc_ = other.alloc_;
+    comp_ = other.comp_;
+
+    for (const auto &value : other)
+    {
+        insert(value);
+    }
+
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(set &&other) noexcept
+{
+    if (this == &other)
+    {
+        return *this;
+    }
+
+    clear();
+
+    alloc_ = std::move(other.alloc_);
+    comp_ = std::move(other.comp_);
+    size_ = other.size_;
+
+    root_ = std::move(other.root_);
+
+    other.size_ = 0;
+    other.root_ = nullptr;
+
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(std::initializer_list<value_type> ilist)
+{
+    clear();
+    for (const auto &value : ilist)
+    {
+        insert(value);
+    }
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
 bool set<T, Compare, Allocator>::empty() const noexcept
 {
     return size_ == 0;
