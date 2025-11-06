@@ -350,6 +350,21 @@ bool set<T, Compare, Allocator>::iterator::operator!=(const iterator &other) con
     return node_ != other.node_;
 }
 
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::const_iterator::const_iterator(const iterator &it)
+    : node_(it.node_), tree_(nullptr) {}
+
+template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::const_iterator::operator==(const const_iterator &other) const
+{
+    return node_ == other.node_;
+}
+
+template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::const_iterator::operator!=(const const_iterator &other) const
+{
+    return node_ != other.node_;
+}
 
 template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set()
@@ -500,3 +515,21 @@ void swap(set<T, Compare, Alloc> &lhs, set<T, Compare, Alloc> &rhs) noexcept
 
 template<class T, class Compare, class Alloc, class Pred>
 typename set<T, Compare, Alloc>::size_type erase_if(set<T, Compare, Alloc>& c, Pred pred);
+
+template<class T, class Compare, class Alloc, class Pred>
+typename set<T, Compare, Alloc>::size_type erase_if(set<T, Compare, Alloc> &c, Pred pred)
+{
+    size_t old_size = c.size();
+    for (auto it = c.begin(); it != c.end(); )
+    {
+        if (pred(*it))
+        {
+            it = c.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+    return old_size - c.size();
+}
