@@ -247,8 +247,8 @@ private:
     void fix_insert(Node* node);
     void fix_erase(Node* node, Node* parent);
 
-    Node* minimum(Node* node) const;
-    Node* maximum(Node* node) const;
+    static Node* minimum(Node* node);
+    static Node* maximum(Node* node);
     Node* successor(Node* node) const;
     Node* predecessor(Node* node) const;
 
@@ -452,6 +452,61 @@ typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::max_s
 
 template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::minimum(Node *node)
+{
+    while (node->left != nullptr)
+    {
+        node = node->left;
+    }
+    return node;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::maximum(Node *node)
+{
+    while (node->right != nullptr)
+    {
+        node = node->right;
+    }
+    return node;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::successor(Node *node) const
+{
+    if (node->right != nullptr)
+    {
+        return minimum(node->right);
+    }
+
+    Node *parent = node->parent;
+    while (parent != nullptr && node == parent->right)
+    {
+        node = parent;
+        parent = parent->parent;
+    }
+    return parent;
+
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::predecessor(Node *node) const
+{
+    if (node->left != nullptr)
+    {
+        return maximum(node->left);
+    }
+
+    Node *parent = node->parent;
+    while (parent != nullptr && node == parent->left)
+    {
+        node = parent;
+        parent = parent->parent;
+    }
+    return parent;
+}
 
 template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
