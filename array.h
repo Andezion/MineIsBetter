@@ -57,9 +57,9 @@ struct array {
     constexpr const_reverse_iterator rend() const noexcept;
     constexpr const_reverse_iterator crend() const noexcept;
 
-    [[nodiscard]] constexpr bool empty() noexcept;
-    [[nodiscard]] constexpr size_type size() noexcept;
-    [[nodiscard]] constexpr size_type max_size() noexcept;
+    [[nodiscard]] static constexpr bool empty() noexcept;
+    [[nodiscard]] static constexpr size_type size() noexcept;
+    [[nodiscard]] static constexpr size_type max_size() noexcept;
 
     void fill(const T& value);
     void swap(array& other) noexcept(noexcept(std::swap(std::declval<T&>(), std::declval<T&>())));
@@ -311,18 +311,6 @@ constexpr const T && get(const array<T, N> &&arr)
         throw std::out_of_range("array::get");
     }
     return arr[I];
-}
-
-namespace std {
-
-    template <class T, std::size_t N>
-    struct tuple_size<array<T, N>> : integral_constant<std::size_t, N> {};
-
-    template <std::size_t I, class T, std::size_t N>
-    struct tuple_element<I, array<T, N>> {
-        static_assert(I < N, "Index out of bounds in tuple_element<std::array>");
-        using type = T;
-    };
 }
 
 template <class T, std::size_t N>

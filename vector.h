@@ -780,6 +780,19 @@ vector<T, Alloc>::emplace(const_iterator pos, Args &&...args)
     return insert_ptr;
 }
 
+template<typename T, typename Alloc>
+template<class ... Args>
+void vector<T, Alloc>::emplace_back(Args &&...args)
+{
+    if (size_ == capacity_)
+    {
+        reallocate_grow(size_ + 1);
+    }
+
+    alloc_.construct(data_ + size_, std::forward<Args>(args)...);
+    ++size_;
+}
+
 
 template<typename T, typename Alloc>
 void vector<T, Alloc>::push_back(const value_type& value)
