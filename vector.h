@@ -24,12 +24,12 @@ public:
     using difference_type        = typename traits_type::difference_type;
     using size_type              = typename traits_type::size_type;
 
-    constexpr vector() noexcept(std::is_nothrow_default_constructible<allocator_type>::value);
+    constexpr vector() noexcept(std::is_nothrow_default_constructible_v<allocator_type>);
     explicit vector(const allocator_type& alloc) noexcept;
     explicit vector(size_type n, const allocator_type& alloc = allocator_type());
     vector(size_type n, const value_type& value, const allocator_type& alloc = allocator_type());
     template <typename InputIt,
-              typename = std::enable_if_t<!std::is_integral<InputIt>::value>>
+              typename = std::enable_if_t<!std::is_integral_v<InputIt>>>
     vector(InputIt first, InputIt last, const allocator_type& alloc = allocator_type());
     vector(std::initializer_list<value_type> il, const allocator_type& alloc = allocator_type());
     vector(const vector& other);
@@ -173,6 +173,82 @@ private:
     void swap_alloc_and_data(vector& other) noexcept;
     void check_range(size_type pos) const;
 };
+
+template<typename T, typename Alloc>
+constexpr vector<T, Alloc>::vector() noexcept(std::is_nothrow_default_constructible_v<allocator_type>)
+    : alloc_(), data_(nullptr), size_(0), capacity_(0)
+{}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(const allocator_type &alloc) noexcept
+    : alloc_(alloc), data_(nullptr), size_(0), capacity_(0)
+{}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(size_type n, const allocator_type &alloc)
+    : alloc_(alloc), data_(nullptr), size_(0), capacity_(0)
+{
+    if (n > 0)
+    {
+        data_ = std::allocator_traits<Alloc>::allocate(alloc_, n);
+        for (size_type i = 0; i < n; ++i)
+        {
+            std::allocator_traits<Alloc>::construct(alloc_, data_ + i);
+        }
+        size_ = capacity_ = n;
+    }
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(size_type n, const value_type &value, const allocator_type &alloc)
+    : alloc_(alloc), data_(nullptr), size_(0), capacity_(0)
+{
+    if (n > 0)
+    {
+        data_ = std::allocator_traits<Alloc>::allocate(alloc_, n);
+        for (size_type i = 0; i < n; ++i)
+        {
+            std::allocator_traits<Alloc>::construct(alloc_, data_ + i, value);
+        }
+        size_ = capacity_ = n;
+    }
+}
+
+template<typename T, typename Alloc>
+template<typename InputIt, typename>
+vector<T, Alloc>::vector(InputIt first, InputIt last, const allocator_type &alloc)
+    : alloc_(alloc), data_(nullptr), size_(0), capacity_(0)
+{
+    size_type n = std::distance(first, last);
+    if (n > 0)
+    {
+        data_ = std::allocator_traits<Alloc>::allocate(alloc_, n);
+        size_type i = 0;
+        for (auto it = first; it != last; ++it, ++i)
+        {
+            std::allocator_traits<Alloc>::construct(alloc_, data_ + i, *it);
+        }
+        size_ = capacity_ = n;
+    }
+}
+
+template<typename T, typename Alloc>
+vector<T, Alloc>::vector(std::initializer_list<value_type> il, const allocator_type &alloc)
+    : alloc_(alloc), data_(nullptr), size_(0), capacity_(0)
+{
+    size_type n = il.size();
+    if (n > 0)
+    {
+        data_ = std::allocator_traits<Alloc>::allocate(alloc_, n);
+        size_type i = 0;
+
+        for (const auto &val : il)
+        {
+            std::allocator_traits<Alloc>::construct(alloc_, data_ + i++, val);
+        }
+        size_ = capacity_ = n;
+    }
+}
 
 template<typename T, typename Alloc>
 vector<T, Alloc>::vector(const vector &other)
