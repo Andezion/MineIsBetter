@@ -615,15 +615,34 @@ void vector<T, Alloc>::reserve(size_type new_cap)
     }
 
     pointer new_data = alloc_.allocate(new_cap);
+    size_type i = 0;
 
-    for (size_type i = 0; i < size_; ++i)
+    try
     {
-        traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+        if (size_ > 0 && data_ != nullptr)
+        {
+            for (size_type size = 0; size < size_; ++size)
+            {
+                if (data[i] != nullptr)
+                {
+                    traits_type::construct(alloc_, new_data + size, std::move_if_noexcept(data_[size]));
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        for (size_type j = 0; j < i; ++j)
+        {
+            traits_type::destroy(alloc_, new_data + j);
+        }
+        alloc_.deallocate(new_data, new_cap);
+        throw;
     }
 
-    for (size_type i = 0; i < size_; ++i)
+    for (size_type size = 0; size < size_; ++size)
     {
-        traits_type::destroy(alloc_, data_ + i);
+        traits_type::destroy(alloc_, data_ + size);
     }
 
     if (data_ != nullptr)
@@ -634,6 +653,7 @@ void vector<T, Alloc>::reserve(size_type new_cap)
     data_ = new_data;
     capacity_ = new_cap;
 }
+
 
 template<typename T, typename Alloc>
 typename vector<T, Alloc>::size_type vector<T, Alloc>::capacity() const noexcept
@@ -659,9 +679,15 @@ void vector<T, Alloc>::shrink_to_fit()
         {
             pointer new_data = alloc_.allocate(size_);
 
-            for (size_type i = 0; i < size_; ++i)
+            if (data_ != nullptr && size_ > 0)
             {
-                traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+                for (size_type i = 0; i < size_; ++i)
+                {
+                    if (data_[i] != nullptr)
+                    {
+                        traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+                    }
+                }
             }
 
             for (size_type i = 0; i < size_; ++i)
