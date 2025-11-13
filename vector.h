@@ -904,10 +904,18 @@ void vector<T, Alloc>::push_back(const value_type& value)
         size_type new_cap = (capacity_ == 0) ? 1 : capacity_ * 2;
         T * new_data = alloc_.allocate(new_cap);
 
-        for (size_type i = 0; i < size_; ++i)
+        if (data_ != nullptr)
         {
-            traits_type::construct(alloc_, new_data + i, data_[i]);
-            traits_type::destroy(alloc_, data_ + i);
+            for (size_type i = 0; i < size_; ++i)
+            {
+                if (data[i] != nullptr)
+                {
+                    traits_type::construct(alloc_, new_data + i, data_[i]);
+                }
+                traits_type::destroy(alloc_, data_ + i);
+            }
+
+            alloc_.deallocate(data_, capacity_);
         }
 
         if (data_ != nullptr)
@@ -941,7 +949,10 @@ void vector<T, Alloc>::push_back(value_type&& value)
 
         for (size_type i = 0; i < size_; ++i)
         {
-            traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+            if (data[i] != nullptr)
+            {
+                traits_type::construct(alloc_, new_data + i, std::move_if_noexcept(data_[i]));
+            }
             traits_type::destroy(alloc_, data_ + i);
         }
 
@@ -1041,7 +1052,11 @@ void vector<T, Alloc>::resize(size_type count)
 
             for (size_type i = 0; i < size_; ++i)
             {
-                new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                if (data[i] != nullptr)
+                {
+                    new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                }
+
                 (data_ + i)->~T();
             }
 
@@ -1083,7 +1098,11 @@ void vector<T, Alloc>::resize(size_type count, const value_type &value)
 
             for (size_type i = 0; i < size_; ++i)
             {
-                new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                if (data[i] != nullptr)
+                {
+                    new (new_data + i) T(std::move_if_noexcept(data_[i]));
+                }
+
                 (data_ + i)->~T();
             }
 
