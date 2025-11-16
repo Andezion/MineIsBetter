@@ -454,6 +454,40 @@ template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_node(const value_type &value)
+{
+    Node *node = alloc_.allocate(1);
+    try
+    {
+        std::allocator_traits<NodeAllocator>::construct(alloc_, &node->value, value);
+        node->left = node->right = node->parent = nullptr;
+    }
+    catch (...)
+    {
+        alloc_.deallocate(node, 1);
+        throw;
+    }
+    return node;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_node(value_type &&value)
+{
+    Node *node = alloc_.allocate(1);
+    try
+    {
+        std::allocator_traits<NodeAllocator>::construct(alloc_, &node->value, std::move(value));
+        node->left = node->right = node->parent = nullptr;
+    }
+    catch (...)
+    {
+        alloc_.deallocate(node, 1);
+        throw;
+    }
+    return node;
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::minimum(Node *node)
 {
     while (node->left != nullptr)
