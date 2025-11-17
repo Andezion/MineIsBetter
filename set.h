@@ -488,6 +488,32 @@ typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_n
 }
 
 template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::destroy_node(Node *node)
+{
+    if (!node)
+    {
+        return;
+    }
+
+    std::allocator_traits<NodeAllocator>::destroy(alloc_, &node->value);
+
+    alloc_.deallocate(node, 1);
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::destroy_tree(Node *node)
+{
+    if (!node)
+    {
+        return;
+    }
+
+    destroy_tree(node->left);
+    destroy_tree(node->right);
+    destroy_node(node);
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::minimum(Node *node)
 {
     while (node->left != nullptr)
