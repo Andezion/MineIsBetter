@@ -433,21 +433,39 @@ set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(std::initiali
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::begin() noexcept
+{
+    return iterator(min_node(root_), this);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::begin() const noexcept
+{
+    return const_iterator(min_node(root_), this);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::cbegin() const noexcept
+{
+    return const_iterator(min_node(root_), this);
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::end() noexcept
 {
-    return iterator(nullptr);
+    return iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::end() const noexcept
 {
-    return const_iterator(nullptr);
+    return const_iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::cend() const noexcept
 {
-    return const_iterator(nullptr);
+    return const_iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
