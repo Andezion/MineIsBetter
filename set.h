@@ -433,6 +433,24 @@ set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(std::initiali
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::end() noexcept
+{
+    return iterator(nullptr);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::end() const noexcept
+{
+    return const_iterator(nullptr);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::cend() const noexcept
+{
+    return const_iterator(nullptr);
+}
+
+template<class T, class Compare, class Allocator>
 bool set<T, Compare, Allocator>::empty() const noexcept
 {
     return size_ == 0;
