@@ -355,6 +355,70 @@ set<T, Compare, Allocator>::const_iterator::const_iterator(const iterator &it)
     : node_(it.node_), tree_(nullptr) {}
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator & set<T, Compare, Allocator>::const_iterator::operator++()
+{
+    if (node_->right)
+    {
+        node_ = node_->right;
+        while (node_->left)
+        {
+            node_ = node_->left;
+        }
+    }
+    else
+    {
+        Node* p = node_->parent;
+        while (p && node_ == p->right)
+        {
+            node_ = p;
+            p = p->parent;
+        }
+        node_ = p;
+    }
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::const_iterator::operator++(int)
+{
+    auto tmp = *this;
+    ++*this;
+    return tmp;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator & set<T, Compare, Allocator>::const_iterator::operator--()
+{
+    if (node_->left)
+    {
+        node_ = node_->left;
+        while (node_->right)
+        {
+            node_ = node_->right;
+        }
+    }
+    else
+    {
+        Node* p = node_->parent;
+        while (p && node_ == p->left)
+        {
+            node_ = p;
+            p = p->parent;
+        }
+        node_ = p;
+    }
+    return *this;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::const_iterator::operator--(int)
+{
+    auto tmp = *this;
+    --*this;
+    return tmp;
+}
+
+template<class T, class Compare, class Allocator>
 bool set<T, Compare, Allocator>::const_iterator::operator==(const const_iterator &other) const
 {
     return node_ == other.node_;
