@@ -443,6 +443,68 @@ set<T, Compare, Allocator>::set()
 }
 
 template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(const set &other)
+    : root_(nullptr),
+      size_(0),
+      comp_(other.comp_),
+      alloc_(other.alloc_)
+{
+    for (const T& val : other)
+    {
+        insert(val);
+    }
+}
+
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(const set &other, const Allocator &alloc)
+    : root_(nullptr),
+      size_(0),
+      comp_(other.comp_),
+      alloc_(alloc)
+{
+    for (const T& val : other)
+    {
+        insert(val);
+    }
+}
+
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(set &&other) noexcept
+    : root_(other.root_), leftmost_(nullptr), rightmost_(nullptr),
+      size_(other.size_),
+      comp_(std::move(other.comp_)),
+      alloc_(std::move(other.alloc_))
+{
+    other.root_ = nullptr;
+    other.size_ = 0;
+}
+
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(set &&other, const Allocator &alloc)
+    : root_(nullptr),
+      size_(0),
+      comp_(std::move(other.comp_)),
+      alloc_(alloc)
+{
+    for (const T& val : other)
+    {
+        insert(std::move(val));
+    }
+
+    other.clear();
+}
+
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::~set()
+{
+    clear();
+}
+
+template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(const set &other)
 {
     if (this == &other)
