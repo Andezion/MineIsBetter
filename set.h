@@ -676,6 +676,78 @@ void set<T, Compare, Allocator>::destroy_tree(Node *node)
 }
 
 template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::rotate_left(Node *x)
+{
+    Node *y = x->right;
+    x->right = y->left;
+
+    if (y->left != nullptr)
+    {
+        y->left->parent = x;
+    }
+
+    y->parent = x->parent;
+
+    if (x->parent == nullptr)
+    {
+        root_ = y;
+    }
+    else if (x == x->parent->left)
+    {
+        x->parent->left = y;
+    }
+    else
+    {
+        x->parent->right = y;
+    }
+
+    y->left = x;
+    x->parent = y;
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::rotate_right(Node *x)
+{
+    Node *y = x->left;
+    x->left = y->right;
+
+    if (y->right != nullptr)
+    {
+        y->right->parent = x;
+    }
+
+    y->parent = x->parent;
+
+    if (x->parent == nullptr)
+    {
+        root_ = y;
+    }
+    else if (x == x->parent->right)
+    {
+        x->parent->right = y;
+    }
+    else
+    {
+        x->parent->left = y;
+    }
+
+    y->right = x;
+    x->parent = y;
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::fix_insert(Node *z)
+{
+
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
+{
+
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::minimum(Node *node)
 {
     while (node->left != nullptr)
