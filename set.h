@@ -676,75 +676,203 @@ void set<T, Compare, Allocator>::destroy_tree(Node *node)
 }
 
 template<class T, class Compare, class Allocator>
-void set<T, Compare, Allocator>::rotate_left(Node *x)
+void set<T, Compare, Allocator>::rotate_left(Node *node)
 {
-    Node *y = x->right;
-    x->right = y->left;
+    Node *y = node->right;
+    node->right = y->left;
 
     if (y->left != nullptr)
     {
-        y->left->parent = x;
+        y->left->parent = node;
     }
 
-    y->parent = x->parent;
+    y->parent = node->parent;
 
-    if (x->parent == nullptr)
+    if (node->parent == nullptr)
     {
         root_ = y;
     }
-    else if (x == x->parent->left)
+    else if (node == node->parent->left)
     {
-        x->parent->left = y;
+        node->parent->left = y;
     }
     else
     {
-        x->parent->right = y;
+        node->parent->right = y;
     }
 
-    y->left = x;
-    x->parent = y;
+    y->left = node;
+    node->parent = y;
 }
 
 template<class T, class Compare, class Allocator>
-void set<T, Compare, Allocator>::rotate_right(Node *x)
+void set<T, Compare, Allocator>::rotate_right(Node *node)
 {
-    Node *y = x->left;
-    x->left = y->right;
+    Node *y = node->left;
+    node->left = y->right;
 
     if (y->right != nullptr)
     {
-        y->right->parent = x;
+        y->right->parent = node;
     }
 
-    y->parent = x->parent;
+    y->parent = node->parent;
 
-    if (x->parent == nullptr)
+    if (node->parent == nullptr)
     {
         root_ = y;
     }
-    else if (x == x->parent->right)
+    else if (node == node->parent->right)
     {
-        x->parent->right = y;
+        node->parent->right = y;
     }
     else
     {
-        x->parent->left = y;
+        node->parent->left = y;
     }
 
-    y->right = x;
-    x->parent = y;
+    y->right = node;
+    node->parent = y;
 }
 
 template<class T, class Compare, class Allocator>
-void set<T, Compare, Allocator>::fix_insert(Node *z)
+void set<T, Compare, Allocator>::fix_insert(Node *node)
 {
+    while (node->parent && !node->parent->is_black)
+    {
+        if (node->parent == node->parent->parent->left)
+        {
+            Node *y = node->parent->parent->right;
 
+            if (y && !y->is_black)
+            {
+                node->parent->is_black = true;
+                y->is_black = true;
+                node->parent->parent->is_black = false;
+                node = node->parent->parent;
+            }
+            else
+            {
+                if (node == node->parent->right)
+                {
+
+                    node = node->parent;
+                    rotate_left(node);
+                }
+
+                node->parent->is_black = true;
+                node->parent->parent->is_black = false;
+                rotate_right(node->parent->parent);
+            }
+        }
+        else
+        {
+            Node *y = node->parent->parent->left;
+
+            if (y && !y->is_black)
+            {
+                node->parent->is_black = true;
+                y->is_black = true;
+                node->parent->parent->is_black = false;
+                node = node->parent->parent;
+            }
+            else
+            {
+                if (node == node->parent->left)
+                {
+                    node = node->parent;
+                    rotate_right(node);
+                }
+                node->parent->is_black = true;
+                node->parent->parent->is_black = false;
+                rotate_left(node->parent->parent);
+            }
+        }
+    }
+    root_->is_black = true;
 }
 
 template<class T, class Compare, class Allocator>
 void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
 {
+    while (node != root_ && (!node || node->is_black))
+    {
+        if (node == parent->left)
+        {
+            Node *w = parent->right;
 
+            if (!w->is_black)
+            {
+                w->is_black = true;
+                parent->is_black = false;
+                rotate_left(parent);
+                w = parent->right;
+            }
+
+            if ((!w->left || w->left->is_black) &&
+                (!w->right || w->right->is_black))
+            {
+                w->is_black = false;
+                node = parent;
+                parent = node->parent;
+            }
+            else
+            {
+                if (!w->right || w->right->is_black)
+                {
+                    if (w->left) w->left->is_black = true;
+                    w->is_black = false;
+                    rotate_right(w);
+                    w = parent->right;
+                }
+
+                w->is_black = parent->is_black;
+                parent->is_black = true;
+                if (w->right) w->right->is_black = true;
+                rotate_left(parent);
+                node = root_;
+            }
+        }
+        else
+        {
+            Node *w = parent->left;
+
+            if (!w->is_black)
+            {
+                w->is_black = true;
+                parent->is_black = false;
+                rotate_right(parent);
+                w = parent->left;
+            }
+
+            if ((!w->right || w->right->is_black) &&
+                (!w->left || w->left->is_black))
+            {
+                w->is_black = false;
+                node = parent;
+                parent = node->parent;
+            }
+            else
+            {
+                if (!w->left || w->left->is_black)
+                {
+                    if (w->right) w->right->is_black = true;
+                    w->is_black = false;
+                    rotate_left(w);
+                    w = parent->left;
+                }
+                w->is_black = parent->is_black;
+                parent->is_black = true;
+                if (w->left) w->left->is_black = true;
+                rotate_right(parent);
+                node = root_;
+            }
+        }
+    }
+    if (node)
+    {
+        node->is_black = true;
+    }
 }
 
 template<class T, class Compare, class Allocator>
