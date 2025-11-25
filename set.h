@@ -616,6 +616,76 @@ template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::lower_bound(const key_type &key)
+{
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
+    auto it = iterator(min_node(root_), this);
+    while (it != end() && comp_(*it, key))
+    {
+        ++it;
+    }
+    return it;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::lower_bound(const key_type &key) const
+{
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
+    auto it = const_iterator(min_node(root_), this);
+    while (it != end() && comp_(*it, key))
+    {
+        ++it;
+    }
+    return it;
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::lower_bound(const K &x)
+{
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
+    auto it = iterator(min_node(root_), this);
+    while (it != end() && comp_(*it, x))
+    {
+        ++it;
+    }
+    return it;
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::lower_bound(const K &x) const
+{
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
+    auto it = const_iterator(min_node(root_), this);
+    while (it != end() && comp_(*it, x))
+    {
+        ++it;
+    }
+    return it;
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_node(const value_type &value)
 {
     Node *node = alloc_.allocate(1);
