@@ -690,26 +690,31 @@ typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::upper_bound(const key_type &key)
 {
     if (root_ == nullptr)
+    {
         return end();
+    }
 
-    node_type* current = root_;
-    node_type* result = nullptr;
+    Node *current = root_;
+    Node *result = nullptr;
 
     while (current != nullptr)
     {
-        // Если current->value > key
         if (comp_(key, current->value))
         {
-            result = current;  // Потенциальный кандидат
-            current = current->left;  // Ищем меньший подходящий
+            result = current;
+            current = current->left;
         }
-        else  // current->value <= key
+        else
         {
-            current = current->right;  // Ищем больший
+            current = current->right;
         }
     }
 
-    return result ? iterator(result, this) : end();
+    if (result)
+    {
+        return iterator(result, this);
+    }
+    return end();
 }
 
 template<class T, class Compare, class Allocator>
