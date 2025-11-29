@@ -686,6 +686,81 @@ set<T, Compare, Allocator>::lower_bound(const K &x) const
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::upper_bound(const key_type &key)
+{
+    if (root_ == nullptr)
+        return end();
+
+    node_type* current = root_;
+    node_type* result = nullptr;
+
+    while (current != nullptr)
+    {
+        // Если current->value > key
+        if (comp_(key, current->value))
+        {
+            result = current;  // Потенциальный кандидат
+            current = current->left;  // Ищем меньший подходящий
+        }
+        else  // current->value <= key
+        {
+            current = current->right;  // Ищем больший
+        }
+    }
+
+    return result ? iterator(result, this) : end();
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::upper_bound(const key_type &key) const
+{
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
+    Node *current = root_;
+    Node *result = nullptr;
+
+    while (current != nullptr)
+    {
+        if (comp_(key, current->value))
+        {
+            result = current;
+            current = current->left;
+        }
+        else
+        {
+            current = current->right;
+        }
+    }
+
+    if (result)
+    {
+        return const_iterator(result, this);
+    }
+    return end();
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::upper_bound(const K &x)
+{
+
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::upper_bound(const K &x) const
+{
+
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_node(const value_type &value)
 {
     Node *node = alloc_.allocate(1);
