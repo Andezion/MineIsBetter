@@ -787,7 +787,32 @@ template<class K>
 typename set<T, Compare, Allocator>::const_iterator
 set<T, Compare, Allocator>::upper_bound(const K &x) const
 {
+    if (root_ == nullptr)
+    {
+        return end();
+    }
 
+    Node *current = root_;
+    Node *result = nullptr;
+
+    while (current != nullptr)
+    {
+        if (comp_(x, current->value))
+        {
+            result = current;
+            current = current->left;
+        }
+        else
+        {
+            current = current->right;
+        }
+    }
+
+    if (result)
+    {
+        return const_iterator(result, this);
+    }
+    return end();
 }
 
 template<class T, class Compare, class Allocator>
