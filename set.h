@@ -616,6 +616,22 @@ template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::swap(set &other) noexcept
+{
+    if (this == &other)
+        return;
+
+    std::swap(root_, other.root_);
+    std::swap(size_, other.size_);
+    std::swap(comp_, other.comp_);
+
+    if constexpr (std::allocator_traits<Allocator>::propagate_on_container_swap::value)
+    {
+        std::swap(alloc_, other.alloc_);
+    }
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::lower_bound(const key_type &key)
 {
@@ -1128,6 +1144,28 @@ typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::predeces
         parent = parent->parent;
     }
     return parent;
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::transplant(Node *u, Node *v)
+{
+    if (u->parent == nullptr)
+    {
+        root_ = v;
+    }
+    else if (u == u->parent->left)
+    {
+        u->parent->left = v;
+    }
+    else
+    {
+        u->parent->right = v;
+    }
+
+    if (v != nullptr)
+    {
+        v->parent = u->parent;
+    }
 }
 
 template<class T, class Compare, class Alloc>
