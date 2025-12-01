@@ -595,6 +595,42 @@ typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::reverse_iterator set<T, Compare, Allocator>::rbegin() noexcept
+{
+    return reverse_iterator(end());
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_reverse_iterator set<T, Compare, Allocator>::rbegin() const noexcept
+{
+    return const_reverse_iterator(cend());
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_reverse_iterator set<T, Compare, Allocator>::crbegin() const noexcept
+{
+    return const_reverse_iterator(cend());
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::reverse_iterator set<T, Compare, Allocator>::rend() noexcept
+{
+    return reverse_iterator(begin());
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_reverse_iterator set<T, Compare, Allocator>::rend() const noexcept
+{
+    return const_reverse_iterator(cend());
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_reverse_iterator set<T, Compare, Allocator>::crend() const noexcept
+{
+    return const_reverse_iterator(cend());
+}
+
+template<class T, class Compare, class Allocator>
 bool set<T, Compare, Allocator>::empty() const noexcept
 {
     return size_ == 0;
