@@ -355,6 +355,22 @@ set<T, Compare, Allocator>::const_iterator::const_iterator(const iterator &it)
     : node_(it.node_), tree_(nullptr) {}
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator::reference
+set<T, Compare, Allocator>::const_iterator::operator
+*() const
+{
+    return *node_->value;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator::pointer
+set<T, Compare, Allocator>::const_iterator::operator
+->() const
+{
+    return node_->value;
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator & set<T, Compare, Allocator>::const_iterator::operator++()
 {
     if (node_->right)
