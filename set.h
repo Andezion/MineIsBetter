@@ -684,6 +684,19 @@ void set<T, Compare, Allocator>::swap(set &other) noexcept
 }
 
 template<class T, class Compare, class Allocator>
+bool set<T, Compare, Allocator>::contains(const key_type &key) const
+{
+    return find(key) != end();
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+bool set<T, Compare, Allocator>::contains(const K &x) const
+{
+    return find(x) != end();
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::lower_bound(const key_type &key)
 {
