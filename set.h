@@ -5,6 +5,7 @@
 #include <iterator>
 #include <initializer_list>
 #include <utility>
+#include <algorithm>
 
 template<
     class T,
@@ -82,7 +83,7 @@ public:
         using reference = const T&;
 
         const_iterator() : node_(nullptr), tree_(nullptr) {}
-        explicit const_iterator(const iterator& it);
+            explicit const_iterator(const iterator& it);
 
         reference operator*() const;
         pointer operator->() const;
@@ -309,6 +310,12 @@ typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::iterat
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator & set<T, Compare, Allocator>::iterator::operator--()
 {
+    if (!node_)
+    {
+        node_ = tree_->root_ ? maximum(tree_->root_) : nullptr;
+        return *this;
+    }
+
     if (node_->left)
     {
         node_ = node_->left;
@@ -352,22 +359,19 @@ bool set<T, Compare, Allocator>::iterator::operator!=(const iterator &other) con
 
 template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::const_iterator::const_iterator(const iterator &it)
-    : node_(it.node_), tree_(nullptr) {}
+    : node_(it.node_), tree_(it.tree_) {}
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator::reference
-set<T, Compare, Allocator>::const_iterator::operator
-*() const
-{
-    return *node_->value;
-}
-
-template<class T, class Compare, class Allocator>
-typename set<T, Compare, Allocator>::const_iterator::pointer
-set<T, Compare, Allocator>::const_iterator::operator
-->() const
+set<T, Compare, Allocator>::const_iterator::operator*() const
 {
     return node_->value;
+}
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator::pointer
+set<T, Compare, Allocator>::const_iterator::operator->() const
+{
+    return &node_->value;
 }
 
 template<class T, class Compare, class Allocator>
@@ -405,6 +409,12 @@ typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator & set<T, Compare, Allocator>::const_iterator::operator--()
 {
+    if (!node_)
+    {
+        node_ = tree_->root_ ? maximum(tree_->root_) : nullptr;
+        return *this;
+    }
+
     if (node_->left)
     {
         node_ = node_->left;
@@ -577,19 +587,19 @@ set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(std::initiali
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::begin() noexcept
 {
-    return iterator(min_node(root_), this);
+    return root_ ? iterator(minimum(root_), this) : iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::begin() const noexcept
 {
-    return const_iterator(min_node(root_), this);
+    return root_ ? const_iterator(minimum(root_), this) : const_iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::cbegin() const noexcept
 {
-    return const_iterator(min_node(root_), this);
+    return root_ ? const_iterator(minimum(root_), this) : const_iterator(nullptr, this);
 }
 
 template<class T, class Compare, class Allocator>
@@ -661,11 +671,114 @@ typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::size(
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::max_size() const noexcept
 {
-    return size_;
+    return std::allocator_traits<NodeAllocator>::max_size(alloc_);
 }
 
-template<class T, class Compare, class Alloc>
-bool operator==(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::allocator_type
+set<T, Compare, Allocator>::get_allocator() const noexcept
+{
+    return Allocator();
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::clear() noexcept
+{
+    destroy_tree(root_);
+    root_ = leftmost_ = rightmost_ = nullptr;
+    size_ = 0;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::count(const key_type &key) const
+{
+    return find(key) != end() ? 1 : 0;
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::count(const K &x) const
+{
+    return find(x) != end() ? 1 : 0;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::key_compare set<T, Compare, Allocator>::key_comp() const
+{
+    return comp_;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::value_compare set<T, Compare, Allocator>::value_comp() const
+{
+    return comp_;
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::iterator, typename set<T, Compare, Allocator>::iterator>
+set<T, Compare, Allocator>::equal_range(const key_type &key)
+{
+    return { lower_bound(key), upper_bound(key) };
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::const_iterator, typename set<T, Compare, Allocator>::const_iterator>
+set<T, Compare, Allocator>::equal_range(const key_type &key) const
+{
+    return { lower_bound(key), upper_bound(key) };
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+std::pair<typename set<T, Compare, Allocator>::iterator, typename set<T, Compare, Allocator>::iterator>
+set<T, Compare, Allocator>::equal_range(const K &x)
+{
+    return { lower_bound(x), upper_bound(x) };
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+std::pair<typename set<T, Compare, Allocator>::const_iterator, typename set<T, Compare, Allocator>::const_iterator>
+set<T, Compare, Allocator>::equal_range(const K &x) const
+{
+    return { lower_bound(x), upper_bound(x) };
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::lower_bound(const K &x)
+{
+    if (root_ == nullptr) return end();
+    auto it = iterator(minimum(root_), this);
+    while (it != end() && comp_(*it, x)) ++it;
+    return it;
+}
+
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::erase(const_iterator first, const_iterator last)
+{
+    auto it = first;
+    while (it != last)
+    {
+        it = erase(it);
+    }
+    return iterator(last.node_, this);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::size_type
+set<T, Compare, Allocator>::erase(const key_type &key)
+{
+    iterator it = find(key);
+    if (it == end())
+        return 0;
+
+    erase(it);
+    return 1;
+}
 
 template<class T, class Compare, class Allocator>
 void set<T, Compare, Allocator>::swap(set &other) noexcept
@@ -705,7 +818,7 @@ set<T, Compare, Allocator>::lower_bound(const key_type &key)
         return end();
     }
 
-    auto it = iterator(min_node(root_), this);
+    auto it = iterator(minimum(root_), this);
     while (it != end() && comp_(*it, key))
     {
         ++it;
@@ -714,38 +827,37 @@ set<T, Compare, Allocator>::lower_bound(const key_type &key)
 }
 
 template<class T, class Compare, class Allocator>
-typename set<T, Compare, Allocator>::const_iterator
-set<T, Compare, Allocator>::lower_bound(const key_type &key) const
-{
-    if (root_ == nullptr)
-    {
-        return end();
-    }
-
-    auto it = const_iterator(min_node(root_), this);
-    while (it != end() && comp_(*it, key))
-    {
-        ++it;
-    }
-    return it;
-}
-
-template<class T, class Compare, class Allocator>
-template<class K>
 typename set<T, Compare, Allocator>::iterator
-set<T, Compare, Allocator>::lower_bound(const K &x)
+set<T, Compare, Allocator>::erase(iterator pos)
 {
-    if (root_ == nullptr)
-    {
-        return end();
-    }
+    Node* node = pos.node_;
+    if (!node) return iterator(nullptr, this);
+    Node* next = successor(node);
+    erase_node(node);
+    return iterator(next, this);
+}
 
-    auto it = iterator(min_node(root_), this);
-    while (it != end() && comp_(*it, x))
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::erase(const_iterator pos)
+{
+    Node* node = pos.node_;
+    if (!node) return iterator(nullptr, this);
+    Node* next = successor(node);
+    erase_node(node);
+    return iterator(next, this);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator
+set<T, Compare, Allocator>::erase(const_iterator first, const_iterator last)
+{
+    auto it = first;
+    while (it != last)
     {
-        ++it;
+        it = erase(it);
     }
-    return it;
+    return iterator(last.node_, this);
 }
 
 template<class T, class Compare, class Allocator>
@@ -758,7 +870,7 @@ set<T, Compare, Allocator>::lower_bound(const K &x) const
         return end();
     }
 
-    auto it = const_iterator(min_node(root_), this);
+    auto it = const_iterator(minimum(root_), this);
     while (it != end() && comp_(*it, x))
     {
         ++it;
@@ -902,8 +1014,7 @@ typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_n
     Node *node = alloc_.allocate(1);
     try
     {
-        std::allocator_traits<NodeAllocator>::construct(alloc_, &node->value, value);
-        node->left = node->right = node->parent = nullptr;
+        std::allocator_traits<NodeAllocator>::construct(alloc_, node, value);
     }
     catch (...)
     {
@@ -919,8 +1030,7 @@ typename set<T, Compare, Allocator>::Node * set<T, Compare, Allocator>::create_n
     Node *node = alloc_.allocate(1);
     try
     {
-        std::allocator_traits<NodeAllocator>::construct(alloc_, &node->value, std::move(value));
-        node->left = node->right = node->parent = nullptr;
+        std::allocator_traits<NodeAllocator>::construct(alloc_, node, std::move(value));
     }
     catch (...)
     {
@@ -938,8 +1048,7 @@ void set<T, Compare, Allocator>::destroy_node(Node *node)
         return;
     }
 
-    std::allocator_traits<NodeAllocator>::destroy(alloc_, &node->value);
-
+    std::allocator_traits<NodeAllocator>::destroy(alloc_, node);
     alloc_.deallocate(node, 1);
 }
 
@@ -954,6 +1063,259 @@ void set<T, Compare, Allocator>::destroy_tree(Node *node)
     destroy_tree(node->left);
     destroy_tree(node->right);
     destroy_node(node);
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node* set<T, Compare, Allocator>::find_node(const key_type& key) const
+{
+    Node* current = root_;
+    while (current)
+    {
+        if (comp_(key, current->value))
+            current = current->left;
+        else if (comp_(current->value, key))
+            current = current->right;
+        else
+            return current;
+    }
+    return nullptr;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::find(const key_type &key)
+{
+    Node* n = find_node(key);
+    return n ? iterator(n, this) : end();
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::find(const key_type &key) const
+{
+    Node* n = find_node(key);
+    return n ? const_iterator(n, this) : cend();
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::find(const K &x)
+{
+    Node* current = root_;
+    while (current)
+    {
+        if (comp_(x, current->value)) current = current->left;
+        else if (comp_(current->value, x)) current = current->right;
+        else return iterator(current, this);
+    }
+    return end();
+}
+
+template<class T, class Compare, class Allocator>
+template<class K>
+typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::find(const K &x) const
+{
+    Node* current = root_;
+    while (current)
+    {
+        if (comp_(x, current->value)) current = current->left;
+        else if (comp_(current->value, x)) current = current->right;
+        else return const_iterator(current, this);
+    }
+    return cend();
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::Node*, bool>
+set<T, Compare, Allocator>::insert_node(const value_type &value)
+{
+    Node* y = nullptr;
+    Node* x = root_;
+    while (x)
+    {
+        y = x;
+        if (comp_(value, x->value)) x = x->left;
+        else if (comp_(x->value, value)) x = x->right;
+        else return {x, false};
+    }
+
+    Node* z = create_node(value);
+    z->parent = y;
+    z->left = z->right = nullptr;
+    z->is_black = false;
+
+    if (!y)
+    {
+        root_ = z;
+    }
+    else if (comp_(z->value, y->value))
+    {
+        y->left = z;
+    }
+    else
+    {
+        y->right = z;
+    }
+
+    ++size_;
+    if (!leftmost_ || comp_(z->value, leftmost_->value)) leftmost_ = z;
+    if (!rightmost_ || comp_(rightmost_->value, z->value)) rightmost_ = z;
+
+    fix_insert(z);
+    return {z, true};
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::Node*, bool>
+set<T, Compare, Allocator>::insert_node(value_type &&value)
+{
+    Node* y = nullptr;
+    Node* x = root_;
+    while (x)
+    {
+        y = x;
+        if (comp_(value, x->value)) x = x->left;
+        else if (comp_(x->value, value)) x = x->right;
+        else return {x, false};
+    }
+
+    Node* z = create_node(std::move(value));
+    z->parent = y;
+    z->left = z->right = nullptr;
+    z->is_black = false;
+
+    if (!y)
+    {
+        root_ = z;
+    }
+    else if (comp_(z->value, y->value))
+    {
+        y->left = z;
+    }
+    else
+    {
+        y->right = z;
+    }
+
+    ++size_;
+    if (!leftmost_ || comp_(z->value, leftmost_->value)) leftmost_ = z;
+    if (!rightmost_ || comp_(rightmost_->value, z->value)) rightmost_ = z;
+
+    fix_insert(z);
+    return {z, true};
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::iterator, bool>
+set<T, Compare, Allocator>::insert(const value_type &value)
+{
+    auto pr = insert_node(value);
+    return { iterator(pr.first, this), pr.second };
+}
+
+template<class T, class Compare, class Allocator>
+std::pair<typename set<T, Compare, Allocator>::iterator, bool>
+set<T, Compare, Allocator>::insert(value_type &&value)
+{
+    auto pr = insert_node(std::move(value));
+    return { iterator(pr.first, this), pr.second };
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::insert(const_iterator, const value_type &value)
+{
+    return insert(value).first;
+}
+
+template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::insert(const_iterator, value_type &&value)
+{
+    return insert(std::move(value)).first;
+}
+
+template<class T, class Compare, class Allocator>
+template<class InputIt>
+void set<T, Compare, Allocator>::insert(InputIt first, InputIt last)
+{
+    for (; first != last; ++first)
+        insert(*first);
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::insert(std::initializer_list<value_type> ilist)
+{
+    insert(ilist.begin(), ilist.end());
+}
+
+template<class T, class Compare, class Allocator>
+template<class... Args>
+std::pair<typename set<T, Compare, Allocator>::iterator, bool> set<T, Compare, Allocator>::emplace(Args&&... args)
+{
+    value_type v(std::forward<Args>(args)...);
+    return insert(std::move(v));
+}
+
+template<class T, class Compare, class Allocator>
+template<class... Args>
+typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::emplace_hint(const_iterator, Args&&... args)
+{
+    return emplace(std::forward<Args>(args)...).first;
+}
+
+template<class T, class Compare, class Allocator>
+void set<T, Compare, Allocator>::erase_node(Node* z)
+{
+    if (!z) return;
+    Node* y = z;
+    Node* x = nullptr;
+    Node* x_parent = nullptr;
+    bool y_original_black = y->is_black;
+
+    if (!z->left)
+    {
+        x = z->right;
+        x_parent = z->parent;
+        transplant(z, z->right);
+    }
+    else if (!z->right)
+    {
+        x = z->left;
+        x_parent = z->parent;
+        transplant(z, z->left);
+    }
+    else
+    {
+        y = minimum(z->right);
+        y_original_black = y->is_black;
+        x = y->right;
+        if (y->parent == z)
+        {
+            if (x) x->parent = y;
+            x_parent = y;
+        }
+        else
+        {
+            transplant(y, y->right);
+            y->right = z->right;
+            if (y->right) y->right->parent = y;
+            x_parent = y->parent;
+        }
+        transplant(z, y);
+        y->left = z->left;
+        if (y->left) y->left->parent = y;
+        y->is_black = z->is_black;
+    }
+
+    if (y_original_black)
+    {
+        fix_erase(x, x_parent);
+    }
+
+    if (z == leftmost_)
+        leftmost_ = root_ ? minimum(root_) : nullptr;
+    if (z == rightmost_)
+        rightmost_ = root_ ? maximum(root_) : nullptr;
+
+    destroy_node(z);
+    --size_;
 }
 
 template<class T, class Compare, class Allocator>
@@ -1236,52 +1598,38 @@ void set<T, Compare, Allocator>::transplant(Node *u, Node *v)
 template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return lhs.equals(rhs);
+    if (lhs.size() != rhs.size()) return false;
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
-
-template<class T, class Compare, class Alloc>
-bool operator!=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
 bool operator!=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return !lhs.equals(rhs);
+    return !(lhs == rhs);
 }
-
-template<class T, class Compare, class Alloc>
-bool operator<(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
 bool operator<(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return lhs.less(rhs);
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
-
-template<class T, class Compare, class Alloc>
-bool operator<=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
 bool operator<=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return lhs.less(rhs) || lhs.equals(rhs);
+    return !(rhs < lhs);
 }
-
-template<class T, class Compare, class Alloc>
-bool operator>(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
 bool operator>(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return rhs.less(lhs);
+    return rhs < lhs;
 }
-
-template<class T, class Compare, class Alloc>
-bool operator>=(const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs);
 
 template<class T, class Compare, class Alloc>
 bool operator>=(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    return rhs.less(lhs) || rhs.equals(rhs);
+    return !(lhs < rhs);
 }
 
 template<class T, class Compare, class Alloc>
