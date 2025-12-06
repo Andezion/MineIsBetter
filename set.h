@@ -132,7 +132,7 @@ public:
     set& operator=(set&& other) noexcept;
     set& operator=(std::initializer_list<value_type> ilist);
 
-    allocator_type get_allocator() const noexcept;
+    static allocator_type get_allocator() noexcept;
 
     iterator begin() noexcept;
     const_iterator begin() const noexcept;
@@ -241,7 +241,7 @@ private:
     std::pair<Node*, bool> insert_node(const value_type& value);
     std::pair<Node*, bool> insert_node(value_type&& value);
 
-    void erase_node(Node* node);
+    void erase_node(Node* z);
 
     void rotate_left(Node* node);
     void rotate_right(Node* node);
@@ -774,7 +774,7 @@ typename set<T, Compare, Allocator>::size_type set<T, Compare, Allocator>::max_s
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::allocator_type
-set<T, Compare, Allocator>::get_allocator() const noexcept
+set<T, Compare, Allocator>::get_allocator() noexcept
 {
     return Allocator();
 }
@@ -925,6 +925,21 @@ set<T, Compare, Allocator>::lower_bound(const key_type &key)
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::const_iterator
+set<T, Compare, Allocator>::lower_bound(const key_type &key) const
+{
+    const_iterator it = begin();
+    const_iterator end_it = end();
+
+    while (it != end_it && _comp(*it, key))
+    {
+        ++it;
+    }
+
+    return it;
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::erase(iterator pos)
 {
@@ -946,17 +961,7 @@ set<T, Compare, Allocator>::erase(const_iterator pos)
     return iterator(next, this);
 }
 
-template<class T, class Compare, class Allocator>
-typename set<T, Compare, Allocator>::iterator
-set<T, Compare, Allocator>::erase(const_iterator first, const_iterator last)
-{
-    auto it = first;
-    while (it != last)
-    {
-        it = erase(it);
-    }
-    return iterator(last.node_, this);
-}
+
 
 template<class T, class Compare, class Allocator>
 template<class K>
