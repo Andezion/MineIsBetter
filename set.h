@@ -469,11 +469,85 @@ set<T, Compare, Allocator>::set()
 }
 
 template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(const Compare& comp, const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(comp)
+    , alloc_(alloc)
+{
+}
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(Compare())
+    , alloc_(alloc)
+{
+}
+
+template<class T, class Compare, class Allocator>
+template<class InputIt>
+set<T, Compare, Allocator>::set(InputIt first, InputIt last, const Compare& comp, const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(comp)
+    , alloc_(alloc)
+{
+    insert(first, last);
+}
+
+template<class T, class Compare, class Allocator>
+template<class InputIt>
+set<T, Compare, Allocator>::set(InputIt first, InputIt last, const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(Compare())
+    , alloc_(alloc)
+{
+    insert(first, last);
+}
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(std::initializer_list<value_type> init, const Compare& comp, const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(comp)
+    , alloc_(alloc)
+{
+    insert(init);
+}
+
+template<class T, class Compare, class Allocator>
+set<T, Compare, Allocator>::set(std::initializer_list<value_type> init, const Allocator& alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(Compare())
+    , alloc_(alloc)
+{
+    insert(init);
+}
+
+template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set(const set &other)
-    : root_(nullptr),
-      size_(0),
-      comp_(other.comp_),
-      alloc_(other.alloc_)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(other.comp_)
+    , alloc_(other.alloc_)
 {
     for (const T& val : other)
     {
@@ -484,10 +558,12 @@ set<T, Compare, Allocator>::set(const set &other)
 
 template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set(const set &other, const Allocator &alloc)
-    : root_(nullptr),
-      size_(0),
-      comp_(other.comp_),
-      alloc_(alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(other.comp_)
+    , alloc_(alloc)
 {
     for (const T& val : other)
     {
@@ -498,29 +574,48 @@ set<T, Compare, Allocator>::set(const set &other, const Allocator &alloc)
 
 template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set(set &&other) noexcept
-    : root_(other.root_), leftmost_(nullptr), rightmost_(nullptr),
-      size_(other.size_),
-      comp_(std::move(other.comp_)),
-      alloc_(std::move(other.alloc_))
+    : root_(other.root_)
+    , leftmost_(other.leftmost_)
+    , rightmost_(other.rightmost_)
+    , size_(other.size_)
+    , comp_(std::move(other.comp_))
+    , alloc_(std::move(other.alloc_))
 {
     other.root_ = nullptr;
+    other.leftmost_ = nullptr;
+    other.rightmost_ = nullptr;
     other.size_ = 0;
 }
 
 
 template<class T, class Compare, class Allocator>
 set<T, Compare, Allocator>::set(set &&other, const Allocator &alloc)
-    : root_(nullptr),
-      size_(0),
-      comp_(std::move(other.comp_)),
-      alloc_(alloc)
+    : root_(nullptr)
+    , leftmost_(nullptr)
+    , rightmost_(nullptr)
+    , size_(0)
+    , comp_(std::move(other.comp_))
+    , alloc_(alloc)
 {
-    for (const T& val : other)
+    if (alloc == other.alloc_)
     {
-        insert(std::move(val));
+        root_ = other.root_;
+        leftmost_ = other.leftmost_;
+        rightmost_ = other.rightmost_;
+        size_ = other.size_;
+        other.root_ = nullptr;
+        other.leftmost_ = nullptr;
+        other.rightmost_ = nullptr;
+        other.size_ = 0;
     }
-
-    other.clear();
+    else
+    {
+        for (const T& val : other)
+        {
+            insert(val);
+        }
+        other.clear();
+    }
 }
 
 
@@ -564,11 +659,14 @@ set<T, Compare, Allocator> & set<T, Compare, Allocator>::operator=(set &&other) 
     alloc_ = std::move(other.alloc_);
     comp_ = std::move(other.comp_);
     size_ = other.size_;
-
-    root_ = std::move(other.root_);
+    root_ = other.root_;
+    leftmost_ = other.leftmost_;
+    rightmost_ = other.rightmost_;
 
     other.size_ = 0;
     other.root_ = nullptr;
+    other.leftmost_ = nullptr;
+    other.rightmost_ = nullptr;
 
     return *this;
 }
@@ -1066,6 +1164,30 @@ void set<T, Compare, Allocator>::destroy_tree(Node *node)
 }
 
 template<class T, class Compare, class Allocator>
+typename set<T, Compare, Allocator>::Node* set<T, Compare, Allocator>::copy_tree(Node* other_node, Node* parent)
+{
+    if (!other_node)
+        return nullptr;
+    
+    Node* new_node = create_node(other_node->value);
+    new_node->is_black = other_node->is_black;
+    new_node->parent = parent;
+    
+    try
+    {
+        new_node->left = copy_tree(other_node->left, new_node);
+        new_node->right = copy_tree(other_node->right, new_node);
+    }
+    catch (...)
+    {
+        destroy_tree(new_node);
+        throw;
+    }
+    
+    return new_node;
+}
+
+template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node* set<T, Compare, Allocator>::find_node(const key_type& key) const
 {
     Node* current = root_;
@@ -1383,6 +1505,9 @@ void set<T, Compare, Allocator>::fix_insert(Node *node)
 {
     while (node->parent && !node->parent->is_black)
     {
+        if (!node->parent->parent)
+            break;
+        
         if (node->parent == node->parent->parent->left)
         {
             Node *y = node->parent->parent->right;
@@ -1440,9 +1565,15 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
 {
     while (node != root_ && (!node || node->is_black))
     {
+        if (!parent)
+            break;
+        
         if (node == parent->left)
         {
             Node *w = parent->right;
+            
+            if (!w)
+                break;
 
             if (!w->is_black)
             {
@@ -1450,6 +1581,7 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
                 parent->is_black = false;
                 rotate_left(parent);
                 w = parent->right;
+                if (!w) break;
             }
 
             if ((!w->left || w->left->is_black) &&
@@ -1467,6 +1599,7 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
                     w->is_black = false;
                     rotate_right(w);
                     w = parent->right;
+                    if (!w) break;
                 }
 
                 w->is_black = parent->is_black;
@@ -1479,6 +1612,9 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
         else
         {
             Node *w = parent->left;
+            
+            if (!w)
+                break;
 
             if (!w->is_black)
             {
@@ -1486,6 +1622,7 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
                 parent->is_black = false;
                 rotate_right(parent);
                 w = parent->left;
+                if (!w) break;
             }
 
             if ((!w->right || w->right->is_black) &&
@@ -1503,6 +1640,7 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
                     w->is_black = false;
                     rotate_left(w);
                     w = parent->left;
+                    if (!w) break;
                 }
                 w->is_black = parent->is_black;
                 parent->is_black = true;
