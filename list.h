@@ -165,11 +165,15 @@ template<typename T>
 list<T> & list<T>::operator=(list &&other) noexcept
 {
     if (this == &other) return *this;
+
     clear();
+
     head = other.head;
     tail = other.tail;
+
     size_of_list = other.size_of_list;
     other.head = other.tail = nullptr;
+    
     other.size_of_list = 0;
     return *this;
 }
@@ -181,6 +185,7 @@ void list<T>::assign(const list& other)
     {
         return;
     }
+
     clear();
     for (Node* cur = other.head; cur; cur = cur->next)
     {
@@ -194,10 +199,13 @@ void list<T>::assign(list &&other) noexcept
     if (this != &other)
     {
         clear();
+
         head = other.head;
         tail = other.tail;
+
         size_of_list = other.size_of_list;
         other.head = other.tail = nullptr;
+
         other.size_of_list = 0;
     }
     else
@@ -210,21 +218,30 @@ template<typename T>
 void list<T>::assign(std::initializer_list<T> init)
 {
     clear();
-    for (const T& v : init) push_back(v);
+    for (const T& v : init) 
+    {
+        push_back(v);
+    }
 }
 
 template<typename T>
 void list<T>::assign(size_t size, const T &value)
 {
     clear();
-    for (size_t i = 0; i < size; ++i) push_back(value);
+    for (size_t i = 0; i < size; ++i) 
+    {
+        push_back(value);
+    }
 }
 
 template<typename T>
 void list<T>::assign(T *first, T *last)
 {
     clear();
-    for (T* p = first; p != last; ++p) push_back(*p);
+    for (T* p = first; p != last; ++p) 
+    {
+        push_back(*p);
+    }
 }
 
 template<typename T>
@@ -300,14 +317,25 @@ void list<T>::clear() noexcept
 }
 
 template<typename T>
-bool list<T>::empty() const noexcept { return size_of_list == 0; }
+bool list<T>::empty() const noexcept 
+{ 
+    return size_of_list == 0; 
+}
 
 template<typename T>
 void list<T>::push_back(const T& val)
 {
     Node* n = new Node(val, tail, nullptr);
-    if (!head) head = n;
-    if (tail) tail->next = n;
+
+    if (!head) 
+    {
+        head = n;
+    }
+    if (tail) 
+    {
+        tail->next = n;
+    }
+
     tail = n;
     ++size_of_list;
 }
@@ -322,8 +350,16 @@ template<typename T>
 void list<T>::push_front(const T& val)
 {
     Node* n = new Node(val, nullptr, head);
-    if (!tail) tail = n;
-    if (head) head->prev = n;
+
+    if (!tail) 
+    {
+        tail = n;
+    }
+    if (head) 
+    {
+        head->prev = n;
+    }
+
     head = n;
     ++size_of_list;
 }
@@ -337,10 +373,23 @@ void list<T>::push_front(T&& val)
 template<typename T>
 void list<T>::pop_back()
 {
-    if (!tail) return;
+    if (!tail) 
+    {
+        return;
+    }
+
     Node* p = tail;
     tail = tail->prev;
-    if (tail) tail->next = nullptr; else head = nullptr;
+
+    if (tail) 
+    {
+        tail->next = nullptr; 
+    }
+    else 
+    {
+        head = nullptr;
+    }
+
     delete p;
     --size_of_list;
 }
@@ -364,7 +413,7 @@ void list<T>::pop_front()
     {
         tail = nullptr;
     }
-    
+
     delete p;
     --size_of_list;
 }
