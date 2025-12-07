@@ -17,6 +17,14 @@ class list
     Node* tail;
     size_t size_of_list;
 public:
+    using value_type = T;
+    using allocator_type = std::allocator<T>;
+    using size_type = std::size_t;
+    using reference = T&;
+    using const_reference = const T&;
+    using difference_type = std::ptrdiff_t;
+    using reverse_iterator = std::reverse_iterator<struct iterator>;
+    using const_reverse_iterator = std::reverse_iterator<struct const_iterator>;
     struct const_iterator
     {
         const Node* current;
@@ -24,7 +32,7 @@ public:
         explicit const_iterator(const Node* p = nullptr) : current(p) {}
 
         const T& operator*() const noexcept { return current->value; }
-        const_iterator& operator++() noexcept { current = current->next; return *this; }
+        const_iterator& operator++() noexcept { if (current) current = current->next; return *this; }
         bool operator!=(const const_iterator& other) const noexcept { return current != other.current; }
     };
     struct iterator
@@ -34,8 +42,8 @@ public:
         explicit iterator(Node* p = nullptr) : current(p) {}
 
         T& operator*() noexcept { return current->value; }
-        iterator& operator++() noexcept { current = current->next; return *this; }
-        bool operator!=(iterator& other) noexcept { return current != other.current; }
+        iterator& operator++() noexcept { if (current) current = current->next; return *this; }
+        bool operator!=(const iterator& other) const noexcept { return current != other.current; }
     };
 
     list();
@@ -43,16 +51,6 @@ public:
     list(const list& other);
     list(list&& other) noexcept;
     list(std::initializer_list<T> init);
-
-    explicit list (const allocator_type& alloc = allocator_type());
-    explicit list (T n);
-    list (T n, const value_type& val, const allocator_type& alloc = allocator_type());
-    template <class InputIterator> list (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type());
-    list (const list& x);
-    list (const list& x, const allocator_type& alloc);
-    list (list&& x);
-    list (list&& x, const allocator_type& alloc);
-    list (initializer_list<T> il, const allocator_type& alloc = allocator_type());
 
     list& operator=(const list& other);
     list& operator=(list&& other) noexcept;
@@ -62,18 +60,20 @@ public:
     void assign(std::initializer_list<T> init);
     void assign(size_t size, const T& value);
     void assign(T* first, T* last);
+
     T& back();
-    T &back() const;
-    T* begin() const noexcept;
-    const T* cbegin() const noexcept;
-    const T* cend() const noexcept;
+    const T& back() const;
+    iterator begin() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
     void clear() noexcept;
-    const T* crbegin() const noexcept;
-    const T* crend() const noexcept;
-    T* emplace(const T* position, const T& value);
+    const_reverse_iterator crbegin() const noexcept;
+    const_reverse_iterator crend() const noexcept;
     void emplace_back(const T& value);
     void emplace_front(const T& value);
     bool empty() const noexcept;
+    iterator end() noexcept;
     const_iterator end() const noexcept;
     iterator erase(const_iterator pos);
     iterator erase(const_iterator first, const_iterator last);
@@ -81,20 +81,6 @@ public:
     const T& front() const;
 
     iterator insert (const_iterator position, const T& val);
-    iterator insert (const_iterator position, T n, const T& val);
-    template <class InputIterator>iterator insert (const_iterator position, InputIterator first, InputIterator last);
-    iterator insert (const_iterator position, T&& val);
-    iterator insert (const_iterator position, std::initializer_list<T> il);
-
-    T max_size() const noexcept;
-    void merge (list& x);
-    void merge (list&& x);
-    template <class Compare>  void merge (list& x, Compare comp);
-    template <class Compare>  void merge (list&& x, Compare comp);
-
-    list& operator= (const list& x);
-    list& operator= (list&& x);
-    list& operator= (std::initializer_list<T> il);
 
     void pop_back();
     void pop_front();
@@ -107,32 +93,10 @@ public:
     reverse_iterator rbegin() noexcept;
     const_reverse_iterator rbegin() const noexcept;
 
-    void remove (const T& val);
-    template <class Predicate>  void remove_if (Predicate pred);
     reverse_iterator rend() noexcept;
     const_reverse_iterator rend() const noexcept;
-    void resize (T n);
-    void resize (T n, const T& val);
-    void reverse() noexcept;
-    void sort();
 
-    void splice (const_iterator position, list& x);
-    void splice (const_iterator position, list&& x);
-    void splice (const_iterator position, list& x, const_iterator i);
-    void splice (const_iterator position, list&& x, const_iterator i);
-    void splice (const_iterator position, list& x,const_iterator first, const_iterator last);
-    void splice (const_iterator position, list&& x,const_iterator first, const_iterator last);
-
-    void swap (list& x);
-    void unique();
-
-    template <class T, class Alloc>  bool operator== (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-    template <class T, class Alloc>  bool operator!= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-    template <class T, class Alloc>  bool operator<  (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-    template <class T, class Alloc>  bool operator<= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-    template <class T, class Alloc>  bool operator>  (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-    template <class T, class Alloc>  bool operator>= (const list<T,Alloc>& lhs, const list<T,Alloc>& rhs);
-
+    void swap (list& x) noexcept;
     ~list();
 };
 
@@ -150,7 +114,7 @@ list<T>::list(size_t size)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
-    this->assign(size);
+    this->assign(size, T());
 }
 
 template<typename T>
@@ -159,7 +123,7 @@ list<T>::list(const list &other)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
-    this->assign(other);
+    assign(other);
 }
 
 template<typename T>
@@ -182,40 +146,31 @@ list<T>::list(std::initializer_list<T> init)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
-    this->assign(init);
+    assign(init);
 }
 
 template<typename T>
 list<T> & list<T>::operator=(const list &other)
 {
-    if (this != &other)
+    if (this == &other) return *this;
+    clear();
+    for (Node* cur = other.head; cur; cur = cur->next)
     {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
+        push_back(cur->value);
     }
-    this->head = other.head;
-    this->tail = other.tail;
-    this->size_of_list = other.size_of_list;
-    other.head = nullptr;
-    other.tail = nullptr;
-    other.size_of_list = 0;
     return *this;
 }
 
 template<typename T>
 list<T> & list<T>::operator=(list &&other) noexcept
 {
-    if (this != &other)
-    {
-        this->head = other.head;
-        this->tail = other.tail;
-        this->size_of_list = other.size_of_list;
-        other.head = nullptr;
-        other.tail = nullptr;
-        other.size_of_list = 0;
-        return *this;
-    }
+    if (this == &other) return *this;
+    clear();
+    head = other.head;
+    tail = other.tail;
+    size_of_list = other.size_of_list;
+    other.head = other.tail = nullptr;
+    other.size_of_list = 0;
     return *this;
 }
 
@@ -226,24 +181,10 @@ void list<T>::assign(const list& other)
     {
         return;
     }
-
-    this->~list();
-    head = tail = nullptr;
-    size_of_list = 0;
-
+    clear();
     for (Node* cur = other.head; cur; cur = cur->next)
     {
-        Node* new_node = new Node(cur->value, tail, nullptr);
-        if (!head)
-        {
-            head = new_node;
-        }
-        if (tail)
-        {
-            tail->next = new_node;
-        }
-        tail = new_node;
-        ++size_of_list;
+        push_back(cur->value);
     }
 }
 
@@ -252,90 +193,38 @@ void list<T>::assign(list &&other) noexcept
 {
     if (this != &other)
     {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-        this->head = other.head;
-        this->tail = other.tail;
-        this->size_of_list = other.size_of_list;
-        other.head = nullptr;
-        other.tail = nullptr;
+        clear();
+        head = other.head;
+        tail = other.tail;
+        size_of_list = other.size_of_list;
+        other.head = other.tail = nullptr;
         other.size_of_list = 0;
     }
     else
     {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
+        // assigning to self: nothing to do
     }
 }
 
 template<typename T>
 void list<T>::assign(std::initializer_list<T> init)
 {
-    if (this != &init)
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-        this->head = init.head;
-        this->tail = init.tail;
-        this->size_of_list = init.size_of_list;
-        init.head = nullptr;
-        init.tail = nullptr;
-        init.size_of_list = 0;
-
-    }
-    else
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-    }
+    clear();
+    for (const T& v : init) push_back(v);
 }
 
 template<typename T>
 void list<T>::assign(size_t size, const T &value)
 {
-    if (this != &value)
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-        this->size_of_list = 0;
-        this->head = new Node(value);
-        this->size_of_list = size;
-    }
-    else
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-    }
+    clear();
+    for (size_t i = 0; i < size; ++i) push_back(value);
 }
 
 template<typename T>
 void list<T>::assign(T *first, T *last)
 {
-    if (this != &first)
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-        this->size_of_list = 0;
-        this->head = new Node(*first);
-        this->tail = this->head;
-        this->size_of_list = *last;
-        this->size_of_list = *last;
-        this->head->next = nullptr;
-        this->tail->next = nullptr;
-    }
-    else
-    {
-        this->head = nullptr;
-        this->tail = nullptr;
-        this->size_of_list = 0;
-    }
+    clear();
+    for (T* p = first; p != last; ++p) push_back(*p);
 }
 
 template<typename T>
