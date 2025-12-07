@@ -284,3 +284,159 @@ list<T>::~list()
     head = tail = nullptr;
     size_of_list = 0;
 }
+
+template<typename T>
+void list<T>::clear() noexcept
+{
+    Node* cur = head;
+    while (cur)
+    {
+        Node* next = cur->next;
+        delete cur;
+        cur = next;
+    }
+    head = tail = nullptr;
+    size_of_list = 0;
+}
+
+template<typename T>
+bool list<T>::empty() const noexcept { return size_of_list == 0; }
+
+template<typename T>
+void list<T>::push_back(const T& val)
+{
+    Node* n = new Node(val, tail, nullptr);
+    if (!head) head = n;
+    if (tail) tail->next = n;
+    tail = n;
+    ++size_of_list;
+}
+
+template<typename T>
+void list<T>::push_back(T&& val)
+{
+    push_back(val);
+}
+
+template<typename T>
+void list<T>::push_front(const T& val)
+{
+    Node* n = new Node(val, nullptr, head);
+    if (!tail) tail = n;
+    if (head) head->prev = n;
+    head = n;
+    ++size_of_list;
+}
+
+template<typename T>
+void list<T>::push_front(T&& val)
+{
+    push_front(val);
+}
+
+template<typename T>
+void list<T>::pop_back()
+{
+    if (!tail) return;
+    Node* p = tail;
+    tail = tail->prev;
+    if (tail) tail->next = nullptr; else head = nullptr;
+    delete p;
+    --size_of_list;
+}
+
+template<typename T>
+void list<T>::pop_front()
+{
+    if (!head) return;
+    Node* p = head;
+    head = head->next;
+    if (head) head->prev = nullptr; else tail = nullptr;
+    delete p;
+    --size_of_list;
+}
+
+template<typename T>
+typename list<T>::iterator list<T>::end() noexcept { return iterator(nullptr); }
+
+template<typename T>
+typename list<T>::const_iterator list<T>::end() const noexcept { return const_iterator(nullptr); }
+
+template<typename T>
+T& list<T>::front() { if (!head) throw std::out_of_range("list::front"); return head->value; }
+
+template<typename T>
+const T& list<T>::front() const { if (!head) throw std::out_of_range("list::front"); return head->value; }
+
+template<typename T>
+typename list<T>::iterator list<T>::erase(const_iterator pos)
+{
+    if (!pos.current) return end();
+    Node* n = const_cast<Node*>(pos.current);
+    Node* next = n->next;
+    if (n->prev) n->prev->next = n->next; else head = n->next;
+    if (n->next) n->next->prev = n->prev; else tail = n->prev;
+    delete n;
+    --size_of_list;
+    return iterator(next);
+}
+
+template<typename T>
+typename list<T>::iterator list<T>::erase(const_iterator first, const_iterator last)
+{
+    auto it = first;
+    while (it != last)
+        it = erase(it);
+    return iterator(last.current);
+}
+
+template<typename T>
+typename list<T>::iterator list<T>::insert(const_iterator position, const T& val)
+{
+    if (!position.current)
+    {
+        push_back(val);
+        return iterator(tail);
+    }
+    Node* cur = const_cast<Node*>(position.current);
+    Node* n = new Node(val, cur->prev, cur);
+    if (cur->prev) cur->prev->next = n; else head = n;
+    cur->prev = n;
+    ++size_of_list;
+    return iterator(n);
+}
+
+template<typename T>
+void list<T>::emplace_back(const T& value) { push_back(value); }
+
+template<typename T>
+void list<T>::emplace_front(const T& value) { push_front(value); }
+
+template<typename T>
+typename list<T>::const_reverse_iterator list<T>::crbegin() const noexcept { return const_reverse_iterator(end()); }
+
+template<typename T>
+typename list<T>::const_reverse_iterator list<T>::crend() const noexcept { return const_reverse_iterator(begin()); }
+
+template<typename T>
+typename list<T>::reverse_iterator list<T>::rbegin() noexcept { return reverse_iterator(end()); }
+
+template<typename T>
+typename list<T>::const_reverse_iterator list<T>::rbegin() const noexcept { return const_reverse_iterator(end()); }
+
+template<typename T>
+typename list<T>::reverse_iterator list<T>::rend() noexcept { return reverse_iterator(begin()); }
+
+template<typename T>
+typename list<T>::const_reverse_iterator list<T>::rend() const noexcept 
+{ 
+    return const_reverse_iterator(begin()); 
+}
+
+template<typename T>
+void list<T>::swap(list& x) noexcept
+{
+    std::swap(head, x.head);
+    std::swap(tail, x.tail);
+    std::swap(size_of_list, x.size_of_list);
+}
