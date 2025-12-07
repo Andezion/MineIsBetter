@@ -114,6 +114,7 @@ list<T>::list(size_t size)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
+    
     this->assign(size, T());
 }
 
@@ -123,6 +124,7 @@ list<T>::list(const list &other)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
+
     assign(other);
 }
 
@@ -131,12 +133,16 @@ list<T>::list(list &&other) noexcept
 {
     this->head = nullptr;
     this->tail = nullptr;
+
     this->size_of_list = 0;
+
     this->head = other.head;
     this->tail = other.tail;
     this->size_of_list = other.size_of_list;
+
     other.head = nullptr;
     other.tail = nullptr;
+
     other.size_of_list = 0;
 }
 
@@ -146,14 +152,20 @@ list<T>::list(std::initializer_list<T> init)
     this->head = nullptr;
     this->tail = nullptr;
     this->size_of_list = 0;
+
     assign(init);
 }
 
 template<typename T>
 list<T> & list<T>::operator=(const list &other)
 {
-    if (this == &other) return *this;
+    if (this == &other) 
+    {
+        return *this;
+    }
+
     clear();
+
     for (Node* cur = other.head; cur; cur = cur->next)
     {
         push_back(cur->value);
@@ -173,7 +185,7 @@ list<T> & list<T>::operator=(list &&other) noexcept
 
     size_of_list = other.size_of_list;
     other.head = other.tail = nullptr;
-    
+
     other.size_of_list = 0;
     return *this;
 }
