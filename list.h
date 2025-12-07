@@ -366,16 +366,42 @@ template<typename T>
 T& list<T>::front() { if (!head) throw std::out_of_range("list::front"); return head->value; }
 
 template<typename T>
-const T& list<T>::front() const { if (!head) throw std::out_of_range("list::front"); return head->value; }
+const T& list<T>::front() const 
+{ 
+    if (!head) 
+    {
+        throw std::out_of_range("list::front");
+    }
+    return head->value; 
+}
 
 template<typename T>
 typename list<T>::iterator list<T>::erase(const_iterator pos)
 {
-    if (!pos.current) return end();
+    if (!pos.current) 
+    {
+        return end();
+    }
+
     Node* n = const_cast<Node*>(pos.current);
     Node* next = n->next;
-    if (n->prev) n->prev->next = n->next; else head = n->next;
-    if (n->next) n->next->prev = n->prev; else tail = n->prev;
+
+    if (n->prev) 
+    {
+        n->prev->next = n->next; 
+    }
+    else head = n->next;
+
+
+    if (n->next) 
+    {
+        n->next->prev = n->prev; 
+    }
+    else 
+    {
+        tail = n->prev;
+    }
+
     delete n;
     --size_of_list;
     return iterator(next);
@@ -386,7 +412,9 @@ typename list<T>::iterator list<T>::erase(const_iterator first, const_iterator l
 {
     auto it = first;
     while (it != last)
+    {
         it = erase(it);
+    }
     return iterator(last.current);
 }
 
