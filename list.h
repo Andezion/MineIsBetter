@@ -238,7 +238,7 @@ T & list<T>::back()
 }
 
 template<typename T>
-T &list<T>::back() const
+const T &list<T>::back() const
 {
     if (size_of_list == 0)
     {
@@ -248,19 +248,25 @@ T &list<T>::back() const
 }
 
 template<typename T>
-T * list<T>::begin() const noexcept
+typename list<T>::iterator list<T>::begin() noexcept
 {
-    return &(head->value);
+    return iterator(head);
 }
 
 template<typename T>
-const T * list<T>::cbegin() const noexcept
+typename list<T>::const_iterator list<T>::begin() const noexcept
 {
     return const_iterator(head);
 }
 
 template<typename T>
-const T * list<T>::cend() const noexcept
+typename list<T>::const_iterator list<T>::cbegin() const noexcept
+{
+    return const_iterator(head);
+}
+
+template<typename T>
+typename list<T>::const_iterator list<T>::cend() const noexcept
 {
     return const_iterator(nullptr);
 }
