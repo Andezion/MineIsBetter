@@ -348,10 +348,23 @@ void list<T>::pop_back()
 template<typename T>
 void list<T>::pop_front()
 {
-    if (!head) return;
+    if (!head)
+    {
+        return;
+    } 
+
     Node* p = head;
     head = head->next;
-    if (head) head->prev = nullptr; else tail = nullptr;
+
+    if (head) 
+    {
+        head->prev = nullptr;
+    } 
+    else tail = nullptr;
+    {
+        tail = nullptr;
+    }
+    
     delete p;
     --size_of_list;
 }
