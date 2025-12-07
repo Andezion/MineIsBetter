@@ -398,34 +398,62 @@ typename list<T>::iterator list<T>::insert(const_iterator position, const T& val
         push_back(val);
         return iterator(tail);
     }
+
     Node* cur = const_cast<Node*>(position.current);
     Node* n = new Node(val, cur->prev, cur);
-    if (cur->prev) cur->prev->next = n; else head = n;
+
+    if (cur->prev) 
+    {
+        cur->prev->next = n; 
+        else head = n;
+    }
+
     cur->prev = n;
     ++size_of_list;
     return iterator(n);
 }
 
 template<typename T>
-void list<T>::emplace_back(const T& value) { push_back(value); }
+void list<T>::emplace_back(const T& value) 
+{ 
+    push_back(value); 
+}
 
 template<typename T>
-void list<T>::emplace_front(const T& value) { push_front(value); }
+void list<T>::emplace_front(const T& value) 
+{ 
+    push_front(value); 
+}
 
 template<typename T>
-typename list<T>::const_reverse_iterator list<T>::crbegin() const noexcept { return const_reverse_iterator(end()); }
+typename list<T>::const_reverse_iterator list<T>::crbegin() const noexcept 
+{ 
+    return const_reverse_iterator(end()); 
+}
 
 template<typename T>
-typename list<T>::const_reverse_iterator list<T>::crend() const noexcept { return const_reverse_iterator(begin()); }
+typename list<T>::const_reverse_iterator list<T>::crend() const noexcept 
+{ 
+    return const_reverse_iterator(begin()); 
+}
 
 template<typename T>
-typename list<T>::reverse_iterator list<T>::rbegin() noexcept { return reverse_iterator(end()); }
+typename list<T>::reverse_iterator list<T>::rbegin() noexcept 
+{ 
+    return reverse_iterator(end()); 
+}
 
 template<typename T>
-typename list<T>::const_reverse_iterator list<T>::rbegin() const noexcept { return const_reverse_iterator(end()); }
+typename list<T>::const_reverse_iterator list<T>::rbegin() const noexcept 
+{ 
+    return const_reverse_iterator(end()); 
+}
 
 template<typename T>
-typename list<T>::reverse_iterator list<T>::rend() noexcept { return reverse_iterator(begin()); }
+typename list<T>::reverse_iterator list<T>::rend() noexcept 
+{ 
+    return reverse_iterator(begin()); 
+}
 
 template<typename T>
 typename list<T>::const_reverse_iterator list<T>::rend() const noexcept 
