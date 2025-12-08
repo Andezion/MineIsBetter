@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stdexcept>
+#include <utility>
+#include <vector>
+#include <iterator>
 
 template<typename T>
 class list
@@ -81,6 +84,22 @@ public:
     const T& front() const;
 
     iterator insert (const_iterator position, const T& val);
+
+    void unique();
+
+    void merge (list& x);
+    void merge (list&& x);
+    template <class Compare> void merge (list& x, Compare comp);
+    template <class Compare> void merge (list&& x, Compare comp);
+
+    void splice (const_iterator position, list& x);
+    void splice (const_iterator position, list&& x);
+    void splice (const_iterator position, list& x, const_iterator i);
+    void splice (const_iterator position, list&& x, const_iterator i);
+    void splice (const_iterator position, list& x, const_iterator first, const_iterator last);
+    void splice (const_iterator position, list&& x, const_iterator first, const_iterator last);
+
+    void sort();
 
     void pop_back();
     void pop_front();
@@ -569,4 +588,355 @@ void list<T>::swap(list& x) noexcept
     std::swap(head, x.head);
     std::swap(tail, x.tail);
     std::swap(size_of_list, x.size_of_list);
+}
+
+// Advanced operations
+template<typename T>
+void list<T>::unique()
+{
+    if (!head) return;
+    Node* cur = head;
+    while (cur && cur->next)
+    {
+        if (cur->value == cur->next->value)
+        {
+            Node* dup = cur->next;
+            cur->next = dup->next;
+            if (dup->next) dup->next->prev = cur; else tail = cur;
+            delete dup;
+            --size_of_list;
+        }
+        else
+        {
+            cur = cur->next;
+        }
+    }
+}
+
+template<typename T>
+void list<T>::merge(list& x)
+{
+    if (this == &x) return;
+    // merge assuming both lists are sorted according to operator<
+    Node dummy(T());
+    Node* last = &dummy;
+    Node* a = head;
+    Node* b = x.head;
+    while (a && b)
+    {
+        if (b->value < a->value)
+        {
+            Node* nb = b->next;
+            // move b before a
+            b->prev = last == &dummy ? nullptr : last;
+            last->next = b;
+            b->next = nullptr; // will be connected when last advances
+            last = b;
+            b = nb;
+        }
+        else
+        {
+            Node* na = a->next;
+            a->prev = last == &dummy ? nullptr : last;
+            last->next = a;
+            last = a;
+            a = na;
+        }
+    }
+    // append remaining
+    Node* rem = a ? a : b;
+    while (rem)
+    {
+        Node* n = rem->next;
+        rem->prev = last == &dummy ? nullptr : last;
+        last->next = rem;
+        last = rem;
+        rem = n;
+    }
+    // fix head/tail
+    head = dummy.next;
+    if (head) head->prev = nullptr;
+    tail = last == &dummy ? nullptr : last;
+    // update sizes
+    size_of_list = 0;
+    for (Node* p = head; p; p = p->next) ++size_of_list;
+    // empty source
+    x.head = x.tail = nullptr;
+    x.size_of_list = 0;
+}
+
+template<typename T>
+void list<T>::merge(list&& x)
+{
+    merge(x);
+}
+
+template<typename T>
+template<class Compare>
+void list<T>::merge(list& x, Compare comp)
+{
+    if (this == &x) return;
+    Node dummy(T());
+    Node* last = &dummy;
+    Node* a = head;
+    Node* b = x.head;
+    while (a && b)
+    {
+        if (comp(b->value, a->value))
+        {
+            Node* nb = b->next;
+            b->prev = last == &dummy ? nullptr : last;
+            last->next = b;
+            last = b;
+            b = nb;
+        }
+        else
+        {
+            Node* na = a->next;
+            a->prev = last == &dummy ? nullptr : last;
+            last->next = a;
+            last = a;
+            a = na;
+        }
+    }
+    Node* rem = a ? a : b;
+    while (rem)
+    {
+        Node* n = rem->next;
+        rem->prev = last == &dummy ? nullptr : last;
+        last->next = rem;
+        last = rem;
+        rem = n;
+    }
+    head = dummy.next;
+    if (head) head->prev = nullptr;
+    tail = last == &dummy ? nullptr : last;
+    size_of_list = 0;
+    for (Node* p = head; p; p = p->next) ++size_of_list;
+    x.head = x.tail = nullptr;
+    x.size_of_list = 0;
+}
+
+template<typename T>
+template<class Compare>
+void list<T>::merge(list&& x, Compare comp)
+{
+    merge(x, comp);
+}
+
+// splice: move elements from x into *this at position
+template<typename T>
+void list<T>::splice(const_iterator position, list& x)
+{
+    if (x.empty()) return;
+    if (this == &x) return;
+    Node* first = x.head;
+    Node* lastn = x.tail;
+    // detach x
+    x.head = x.tail = nullptr;
+    size_t moved = x.size_of_list;
+    x.size_of_list = 0;
+    // insert at position
+    if (!position.current)
+    {
+        // insert at end
+        if (!tail)
+        {
+            head = first; tail = lastn;
+        }
+        else
+        {
+            tail->next = first;
+            first->prev = tail;
+            tail = lastn;
+        }
+    }
+    else
+    {
+        Node* pos = const_cast<Node*>(position.current);
+        Node* prev = pos->prev;
+        if (prev)
+        {
+            prev->next = first;
+            first->prev = prev;
+        }
+        else
+        {
+            head = first;
+            first->prev = nullptr;
+        }
+        lastn->next = pos;
+        pos->prev = lastn;
+    }
+    size_of_list += moved;
+}
+
+template<typename T>
+void list<T>::splice(const_iterator position, list&& x)
+{
+    splice(position, x);
+}
+
+template<typename T>
+void list<T>::splice(const_iterator position, list& x, const_iterator i)
+{
+    if (this == &x) return; // std allows self splice but behavior is no-op when single element and same list
+    if (!i.current) return;
+    Node* node = const_cast<Node*>(i.current);
+    // remove node from x
+    if (node->prev) node->prev->next = node->next; else x.head = node->next;
+    if (node->next) node->next->prev = node->prev; else x.tail = node->prev;
+    --x.size_of_list;
+    // insert into this at position
+    if (!position.current)
+    {
+        // insert at end
+        node->prev = tail;
+        node->next = nullptr;
+        if (tail) tail->next = node; else head = node;
+        tail = node;
+    }
+    else
+    {
+        Node* pos = const_cast<Node*>(position.current);
+        Node* prev = pos->prev;
+        node->prev = prev;
+        node->next = pos;
+        pos->prev = node;
+        if (prev) prev->next = node; else head = node;
+    }
+    ++size_of_list;
+}
+
+template<typename T>
+void list<T>::splice(const_iterator position, list&& x, const_iterator i)
+{
+    splice(position, x, i);
+}
+
+template<typename T>
+void list<T>::splice(const_iterator position, list& x, const_iterator first, const_iterator last)
+{
+    if (this == &x) return;
+    if (first == last) return;
+    Node* f = const_cast<Node*>(first.current);
+    Node* l = const_cast<Node*>(last.current);
+    // if last is nullptr, take until x.tail
+    Node* before = f->prev;
+    Node* after = l ? l : x.tail->next;
+    // detach range [f, l) from x
+    Node* cur = f;
+    size_t cnt = 0;
+    while (cur != after)
+    {
+        Node* nx = cur->next;
+        ++cnt;
+        cur = nx;
+    }
+    if (before) before->next = after; else x.head = after;
+    if (after) after->prev = before; else x.tail = before;
+    x.size_of_list -= cnt;
+    // insert range at position
+    if (!position.current)
+    {
+        // insert at end
+        if (!tail)
+        {
+            head = f;
+            // find last of range
+            Node* rn = f; while (rn->next && rn->next != after) rn = rn->next;
+            tail = rn;
+            tail->next = nullptr;
+        }
+        else
+        {
+            tail->next = f;
+            f->prev = tail;
+            Node* rn = f; while (rn->next && rn->next != after) rn = rn->next;
+            tail = rn;
+            tail->next = nullptr;
+        }
+    }
+    else
+    {
+        Node* pos = const_cast<Node*>(position.current);
+        Node* prev = pos->prev;
+        if (prev) prev->next = f; else head = f;
+        f->prev = prev;
+        Node* rn = f; while (rn->next && rn->next != after) rn = rn->next;
+        rn->next = pos;
+        pos->prev = rn;
+    }
+    size_of_list += cnt;
+}
+
+template<typename T>
+void list<T>::splice(const_iterator position, list&& x, const_iterator first, const_iterator last)
+{
+    splice(position, x, first, last);
+}
+
+// sort: merge sort for linked list
+template<typename T>
+void list<T>::sort()
+{
+    if (!head || !head->next) return;
+
+    // bottom-up merge sort
+    std::vector<Node*> runs;
+    Node* cur = head;
+    while (cur)
+    {
+        Node* start = cur;
+        while (cur->next && !(cur->next->value < cur->value)) cur = cur->next;
+        Node* next = cur->next;
+        cur->next = nullptr;
+        if (next) next->prev = nullptr;
+        runs.push_back(start);
+        cur = next;
+    }
+    // merge runs
+    auto merge_two = [&](Node* a, Node* b)->Node*
+    {
+        Node dummy(T());
+        Node* last = &dummy;
+        while (a && b)
+        {
+            if (!(b->value < a->value))
+            {
+                Node* na = a->next;
+                last->next = a; a->prev = last == &dummy ? nullptr : last; last = a; a = na;
+            }
+            else
+            {
+                Node* nb = b->next;
+                last->next = b; b->prev = last == &dummy ? nullptr : last; last = b; b = nb;
+            }
+        }
+        Node* rem = a ? a : b;
+        while (rem)
+        {
+            Node* nr = rem->next;
+            last->next = rem; rem->prev = last == &dummy ? nullptr : last; last = rem; rem = nr;
+        }
+        return dummy.next;
+    };
+
+    while (runs.size() > 1)
+    {
+        std::vector<Node*> next_runs;
+        for (size_t i = 0; i + 1 < runs.size(); i += 2)
+        {
+            Node* m = merge_two(runs[i], runs[i+1]);
+            // find tail of m and set next to nullptr
+            Node* t = m; while (t->next) t = t->next; t->next = nullptr;
+            next_runs.push_back(m);
+        }
+        if (runs.size() % 2 == 1) next_runs.push_back(runs.back());
+        runs.swap(next_runs);
+    }
+    head = runs.front();
+    // fix prev pointers and tail
+    Node* p = head; p->prev = nullptr; while (p->next) { p->next->prev = p; p = p->next; }
+    tail = p;
 }
