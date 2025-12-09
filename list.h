@@ -4,6 +4,9 @@
 #include <utility>
 #include <vector>
 #include <iterator>
+#include <algorithm>
+#include <limits>
+#include <initializer_list>
 
 template<typename T>
 class list
@@ -26,28 +29,53 @@ public:
     using reference = T&;
     using const_reference = const T&;
     using difference_type = std::ptrdiff_t;
-    using reverse_iterator = std::reverse_iterator<struct iterator>;
-    using const_reverse_iterator = std::reverse_iterator<struct const_iterator>;
+    struct iterator;
+    struct const_iterator;
+
     struct const_iterator
     {
         const Node* current;
 
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
+
         explicit const_iterator(const Node* p = nullptr) : current(p) {}
 
         const T& operator*() const noexcept { return current->value; }
+        const T* operator->() const noexcept { return &current->value; }
         const_iterator& operator++() noexcept { if (current) current = current->next; return *this; }
+        const_iterator& operator--() noexcept { if (current) current = current->prev; else current = nullptr; return *this; }
         bool operator!=(const const_iterator& other) const noexcept { return current != other.current; }
+        bool operator==(const const_iterator& other) const noexcept { return current == other.current; }
+
+        const_iterator(const iterator& it) noexcept; // defined after iterator
     };
+
     struct iterator
     {
         Node* current;
 
+        using iterator_category = std::bidirectional_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
         explicit iterator(Node* p = nullptr) : current(p) {}
 
         T& operator*() noexcept { return current->value; }
+        T* operator->() noexcept { return &current->value; }
         iterator& operator++() noexcept { if (current) current = current->next; return *this; }
+        iterator& operator--() noexcept { if (current) current = current->prev; else current = nullptr; return *this; }
         bool operator!=(const iterator& other) const noexcept { return current != other.current; }
+        bool operator==(const iterator& other) const noexcept { return current == other.current; }
     };
+
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     list();
     explicit list(size_t size);
@@ -70,11 +98,18 @@ public:
     const_iterator begin() const noexcept;
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
+    size_type size() const noexcept;
+    size_type max_size() const noexcept;
+    void resize(size_t n, const T& val = T());
     void clear() noexcept;
     const_reverse_iterator crbegin() const noexcept;
     const_reverse_iterator crend() const noexcept;
     void emplace_back(const T& value);
     void emplace_front(const T& value);
+    template<class... Args>
+    void emplace_back(Args&&... args);
+    template<class... Args>
+    void emplace_front(Args&&... args);
     bool empty() const noexcept;
     iterator end() noexcept;
     const_iterator end() const noexcept;
@@ -84,6 +119,9 @@ public:
     const T& front() const;
 
     iterator insert (const_iterator position, const T& val);
+    iterator insert (const_iterator position, T&& val);
+    template<class... Args>
+    iterator emplace(const_iterator position, Args&&... args);
 
     void unique();
 
@@ -116,8 +154,13 @@ public:
     const_reverse_iterator rend() const noexcept;
 
     void swap (list& x) noexcept;
-    ~list();
+    ~list() noexcept;
 };
+
+// define conversion constructor now that iterator is defined
+template<typename T>
+list<T>::const_iterator::const_iterator(const iterator& it) noexcept : current(it.current) {}
+
 
 template<typename T>
 list<T>::list()
@@ -320,7 +363,20 @@ typename list<T>::const_iterator list<T>::cend() const noexcept
 }
 
 template<typename T>
-list<T>::~list()
+typename list<T>::size_type list<T>::size() const noexcept { return size_of_list; }
+
+template<typename T>
+typename list<T>::size_type list<T>::max_size() const noexcept { return std::numeric_limits<size_t>::max(); }
+
+template<typename T>
+void list<T>::resize(size_t n, const T& val)
+{
+    while (size_of_list > n) pop_back();
+    while (size_of_list < n) push_back(val);
+}
+
+template<typename T>
+list<T>::~list() noexcept
 {
     Node* cur = head;
     while (cur)
@@ -374,7 +430,7 @@ void list<T>::push_back(const T& val)
 template<typename T>
 void list<T>::push_back(T&& val)
 {
-    push_back(val);
+    push_back(std::move(val));
 }
 
 template<typename T>
@@ -398,7 +454,7 @@ void list<T>::push_front(const T& val)
 template<typename T>
 void list<T>::push_front(T&& val)
 {
-    push_front(val);
+    push_front(std::move(val));
 }
 
 template<typename T>
@@ -428,23 +484,14 @@ void list<T>::pop_back()
 template<typename T>
 void list<T>::pop_front()
 {
-    if (!head)
-    {
-        return;
-    } 
-
+    if (!head) return;
     Node* p = head;
     head = head->next;
-
-    if (head) 
-    {
+    if (head) {
         head->prev = nullptr;
-    } 
-    else tail = nullptr;
-    {
+    } else {
         tail = nullptr;
     }
-
     delete p;
     --size_of_list;
 }
@@ -523,10 +570,58 @@ typename list<T>::iterator list<T>::insert(const_iterator position, const T& val
     Node* cur = const_cast<Node*>(position.current);
     Node* n = new Node(val, cur->prev, cur);
 
-    if (cur->prev) 
+    if (cur->prev) {
+        cur->prev->next = n;
+    } else {
+        head = n;
+    }
+
+    cur->prev = n;
+    ++size_of_list;
+    return iterator(n);
+}
+
+template<typename T>
+typename list<T>::iterator list<T>::insert(const_iterator position, T&& val)
+{
+    if (!position.current)
     {
-        cur->prev->next = n; 
-        else head = n;
+        push_back(std::move(val));
+        return iterator(tail);
+    }
+
+    Node* cur = const_cast<Node*>(position.current);
+    Node* n = new Node(std::move(val), cur->prev, cur);
+
+    if (cur->prev) {
+        cur->prev->next = n;
+    } else {
+        head = n;
+    }
+
+    cur->prev = n;
+    ++size_of_list;
+    return iterator(n);
+}
+
+template<typename T>
+template<class... Args>
+typename list<T>::iterator list<T>::emplace(const_iterator position, Args&&... args)
+{
+    T tmp(std::forward<Args>(args)...);
+    if (!position.current)
+    {
+        push_back(std::move(tmp));
+        return iterator(tail);
+    }
+
+    Node* cur = const_cast<Node*>(position.current);
+    Node* n = new Node(std::move(tmp), cur->prev, cur);
+
+    if (cur->prev) {
+        cur->prev->next = n;
+    } else {
+        head = n;
     }
 
     cur->prev = n;
@@ -541,9 +636,33 @@ void list<T>::emplace_back(const T& value)
 }
 
 template<typename T>
+template<class... Args>
+void list<T>::emplace_back(Args&&... args)
+{
+    T tmp(std::forward<Args>(args)...);
+    Node* n = new Node(std::move(tmp), tail, nullptr);
+    if (!head) head = n;
+    if (tail) tail->next = n;
+    tail = n;
+    ++size_of_list;
+}
+
+template<typename T>
 void list<T>::emplace_front(const T& value) 
 { 
     push_front(value); 
+}
+
+template<typename T>
+template<class... Args>
+void list<T>::emplace_front(Args&&... args)
+{
+    T tmp(std::forward<Args>(args)...);
+    Node* n = new Node(std::move(tmp), nullptr, head);
+    if (!tail) tail = n;
+    if (head) head->prev = n;
+    head = n;
+    ++size_of_list;
 }
 
 template<typename T>
@@ -826,48 +945,40 @@ void list<T>::splice(const_iterator position, list&& x)
 template<typename T>
 void list<T>::splice(const_iterator position, list& x, const_iterator i)
 {
-    if (this == &x) 
-    {
-        return; 
-    }
-    
-    if (!i.current) 
-    {
-        return;
-    }
+    if (!i.current) return;
 
     Node* node = const_cast<Node*>(i.current);
-    
-    if (node->prev) 
-    {
-        node->prev->next = node->next; 
-    }
-    else 
-    {
-        x.head = node->next;
+
+    if (this == &x) {
+        // moving within same list
+        // if inserting before itself or immediately before its next, no-op
+        if (position.current == node || position.current == node->next) return;
+        // unlink node
+        if (node->prev) node->prev->next = node->next; else head = node->next;
+        if (node->next) node->next->prev = node->prev; else tail = node->prev;
+        // now insert below (size unchanged)
+    } else {
+        // unlink from x and adjust size
+        if (node->prev) {
+            node->prev->next = node->next;
+        } else {
+            x.head = node->next;
+        }
+        if (node->next) {
+            node->next->prev = node->prev;
+        } else {
+            x.tail = node->prev;
+        }
+        --x.size_of_list;
     }
 
-    if (node->next) 
-    {
-        node->next->prev = node->prev; 
-    }
-    else 
-    {
-        x.tail = node->prev;
-    }
-
-    --x.size_of_list;
-    
     if (!position.current)
     {
         node->prev = tail;
         node->next = nullptr;
-        if (tail) 
-        {
-            tail->next = node; 
-        }
-        else 
-        {
+        if (tail) {
+            tail->next = node;
+        } else {
             head = node;
         }
         tail = node;
@@ -881,16 +992,14 @@ void list<T>::splice(const_iterator position, list& x, const_iterator i)
         node->next = pos;
         pos->prev = node;
 
-        if (prev) 
-        {
-            prev->next = node; 
-        }
-        else 
-        {
+        if (prev) {
+            prev->next = node;
+        } else {
             head = node;
         }
     }
-    ++size_of_list;
+
+    if (this != &x) ++size_of_list;
 }
 
 template<typename T>
@@ -1099,4 +1208,17 @@ void list<T>::sort()
         p->next->prev = p; p = p->next; 
     }
     tail = p;
+}
+
+template<typename T>
+bool operator==(const list<T>& a, const list<T>& b)
+{
+    if (a.size() != b.size()) return false;
+    return std::equal(a.begin(), a.end(), b.begin());
+}
+
+template<typename T>
+bool operator!=(const list<T>& a, const list<T>& b)
+{
+    return !(a == b);
 }
