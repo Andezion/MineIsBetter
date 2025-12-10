@@ -263,35 +263,65 @@ void map<Key,T,Compare,Allocator>::clear() noexcept {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::find(const key_type& key) {
+map<Key,T,Compare,Allocator>::find(const key_type& key) 
+{
 	Node* cur = root_;
-	while (cur) {
-		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) return iterator(cur);
-		if (comp_(key, cur->kv.first)) cur = cur->left; else cur = cur->right;
+	while (cur) 
+	{
+		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) 
+		{
+			return iterator(cur);
+		}
+		if (comp_(key, cur->kv.first)) 
+		{
+			cur = cur->left; 
+		} 
+		else 
+		{
+			cur = cur->right;
+		}
 	}
 	return end();
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
-map<Key,T,Compare,Allocator>::find(const key_type& key) const {
+map<Key,T,Compare,Allocator>::find(const key_type& key) const 
+{
 	const Node* cur = root_;
-	while (cur) {
-		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) return const_iterator(cur);
-		if (comp_(key, cur->kv.first)) cur = cur->left; else cur = cur->right;
+	while (cur) 
+	{
+		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) 
+		{
+			return const_iterator(cur);
+		}
+		if (comp_(key, cur->kv.first)) 
+		{
+			cur = cur->left; 
+		} 
+		else 
+		{
+			cur = cur->right;
+		}
 	}
 	return end();
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) {
+map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) 
+{
 	Node* x = root_;
 	Node* res = nullptr;
-	while (x) {
-		if (comp_(x->kv.first, key)) {
+
+	while (x) 
+	{
+		if (comp_(x->kv.first, key)) 
+		{
 			x = x->right;
-		} else {
+		} 
+		else 
+		{
 			res = x;
 			x = x->left;
 		}
@@ -301,13 +331,19 @@ map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
-map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) const {
+map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) const 
+{
 	const Node* x = root_;
 	const Node* res = nullptr;
-	while (x) {
-		if (comp_(x->kv.first, key)) {
+
+	while (x) 
+	{
+		if (comp_(x->kv.first, key)) 
+		{
 			x = x->right;
-		} else {
+		} 
+		else 
+		{
 			res = x;
 			x = x->left;
 		}
@@ -317,14 +353,20 @@ map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) const {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) {
+map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) 
+{
 	Node* x = root_;
 	Node* res = nullptr;
-	while (x) {
-		if (comp_(key, x->kv.first)) {
+
+	while (x) 
+	{
+		if (comp_(key, x->kv.first)) 
+		{
 			res = x;
 			x = x->left;
-		} else {
+		} 
+		else 
+		{
 			x = x->right;
 		}
 	}
@@ -333,14 +375,20 @@ map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
-map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) const {
+map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) const 
+{
 	const Node* x = root_;
 	const Node* res = nullptr;
-	while (x) {
-		if (comp_(key, x->kv.first)) {
+
+	while (x) 
+	{
+		if (comp_(key, x->kv.first)) 
+		{
 			res = x;
 			x = x->left;
-		} else {
+		} 
+		else 
+		{
 			x = x->right;
 		}
 	}
