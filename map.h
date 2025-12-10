@@ -216,7 +216,8 @@ struct map<Key,T,Compare,Allocator>::const_iterator {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::Node*
-minimum(typename map<Key,T,Compare,Allocator>::Node* n) {
+minimum(typename map<Key,T,Compare,Allocator>::Node* n) 
+{
 	if (!n) return nullptr;
 	while (n->left) n = n->left;
 	return n;
@@ -224,37 +225,71 @@ minimum(typename map<Key,T,Compare,Allocator>::Node* n) {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::Node*
-maximum(typename map<Key,T,Compare,Allocator>::Node* n) {
-	if (!n) return nullptr;
-	while (n->right) n = n->right;
+maximum(typename map<Key,T,Compare,Allocator>::Node* n) 
+{
+	if (!n) 
+	{
+		return nullptr;
+	}
+	while (n->right) 
+	{
+		n = n->right;
+	}
 	return n;
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::begin() noexcept { return iterator(minimum(root_)); }
+map<Key,T,Compare,Allocator>::begin() noexcept 
+{ 
+	return iterator(minimum(root_)); 
+}
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
-map<Key,T,Compare,Allocator>::begin() const noexcept { return const_iterator(minimum(root_)); }
+map<Key,T,Compare,Allocator>::begin() const noexcept 
+{ 
+	return const_iterator(minimum(root_)); 
+}
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::end() noexcept { return iterator(nullptr); }
+map<Key,T,Compare,Allocator>::end() noexcept 
+{ 
+	return iterator(nullptr); 
+}
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
-map<Key,T,Compare,Allocator>::end() const noexcept { return const_iterator(nullptr); }
+map<Key,T,Compare,Allocator>::end() const noexcept 
+{ 
+	return const_iterator(nullptr); 
+}
 
 template<typename Key, typename T, typename Compare, typename Allocator>
-void map<Key,T,Compare,Allocator>::clear() noexcept {
-	if (!root_) return;
+void map<Key,T,Compare,Allocator>::clear() noexcept 
+{
+	if (!root_) 
+	{
+		return;
+	}
+
 	std::vector<Node*> stack;
 	stack.push_back(root_);
-	while (!stack.empty()) {
+
+	while (!stack.empty()) 
+	{
 		Node* n = stack.back(); stack.pop_back();
-		if (n->left) stack.push_back(n->left);
-		if (n->right) stack.push_back(n->right);
+
+		if (n->left) 
+		{
+			stack.push_back(n->left);
+		}
+		if (n->right) 
+		{
+			stack.push_back(n->right);
+		}
+
 		delete n;
 	}
 	root_ = nullptr;
