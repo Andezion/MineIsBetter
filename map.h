@@ -400,17 +400,25 @@ map<Key,T,Compare,Allocator>::operator[](const key_type& key) {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::mapped_type&
-map<Key,T,Compare,Allocator>::at(const key_type& key) {
+map<Key,T,Compare,Allocator>::at(const key_type& key) 
+{
 	auto it = find(key);
-	if (it == end()) throw std::out_of_range("map::at");
+	if (it == end()) 
+	{
+		throw std::out_of_range("map::at");
+	}
 	return it.node->kv.second;
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 const typename map<Key,T,Compare,Allocator>::mapped_type&
-map<Key,T,Compare,Allocator>::at(const key_type& key) const {
+map<Key,T,Compare,Allocator>::at(const key_type& key) const 
+{
 	auto it = find(key);
-	if (it == end()) throw std::out_of_range("map::at");
+	if (it == end()) 
+	{
+		throw std::out_of_range("map::at");
+	}
 	return it.node->kv.second;
 }
 
