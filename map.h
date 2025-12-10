@@ -349,15 +349,26 @@ map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) const {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 std::pair<typename map<Key,T,Compare,Allocator>::iterator, bool>
-map<Key,T,Compare,Allocator>::insert(const value_type& v) {
+map<Key,T,Compare,Allocator>::insert(const value_type& v) 
+{
 	Node* parent = nullptr;
 	Node* cur = root_;
-	while (cur) {
+	
+	while (cur) 
+	{
 		parent = cur;
-		if (!comp_(cur->kv.first, v.first) && !comp_(v.first, cur->kv.first)) {
+		if (!comp_(cur->kv.first, v.first) && !comp_(v.first, cur->kv.first)) 
+		{
 			return { iterator(cur), false };
 		}
-		if (comp_(v.first, cur->kv.first)) cur = cur->left; else cur = cur->right;
+		if (comp_(v.first, cur->kv.first)) 
+		{
+			cur = cur->left; 
+		}
+		else 
+		{
+			cur = cur->right;
+		}
 	}
 	Node* n = new Node(v);
 	n->parent = parent;
@@ -369,31 +380,37 @@ map<Key,T,Compare,Allocator>::insert(const value_type& v) {
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 std::pair<typename map<Key,T,Compare,Allocator>::iterator, bool>
-map<Key,T,Compare,Allocator>::insert(value_type&& v) {
+map<Key,T,Compare,Allocator>::insert(value_type&& v) 
+{
 	return insert(static_cast<const value_type&>(v));
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
-map<Key,T,Compare,Allocator>::insert(const_iterator /*hint*/, const value_type& v) {
+map<Key,T,Compare,Allocator>::insert(const_iterator /*hint*/, const value_type& v) 
+{
 	return insert(v).first;
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 template<class... Args>
 std::pair<typename map<Key,T,Compare,Allocator>::iterator, bool>
-map<Key,T,Compare,Allocator>::emplace(Args&&... args) {
+map<Key,T,Compare,Allocator>::emplace(Args&&... args) 
+{
 	value_type val(std::forward<Args>(args)...);
 	return insert(val);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::mapped_type&
-map<Key,T,Compare,Allocator>::operator[](const key_type& key) {
+map<Key,T,Compare,Allocator>::operator[](const key_type& key) 
+{
 	auto it = lower_bound(key);
-	if (it != end() && !comp_(key, it.node->kv.first) && !comp_(it.node->kv.first, key)) {
+	if (it != end() && !comp_(key, it.node->kv.first) && !comp_(it.node->kv.first, key)) 
+	{
 		return it.node->kv.second;
 	}
+
 	auto pr = insert(value_type(key, mapped_type()));
 	return pr.first.node->kv.second;
 }
