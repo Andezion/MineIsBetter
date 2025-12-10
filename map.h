@@ -353,7 +353,7 @@ map<Key,T,Compare,Allocator>::insert(const value_type& v)
 {
 	Node* parent = nullptr;
 	Node* cur = root_;
-	
+
 	while (cur) 
 	{
 		parent = cur;
@@ -370,12 +370,29 @@ map<Key,T,Compare,Allocator>::insert(const value_type& v)
 			cur = cur->right;
 		}
 	}
+
 	Node* n = new Node(v);
 	n->parent = parent;
-	if (!parent) root_ = n;
-	else if (comp_(n->kv.first, parent->kv.first)) parent->left = n; else parent->right = n;
+
+	if (!parent) 
+	{
+		root_ = n;
+	}
+	else if (comp_(n->kv.first, parent->kv.first)) 
+	{
+		parent->left = n; 
+	}
+	else 
+	{
+		parent->right = n;
+	}
+
 	++size_;
-	return { iterator(n), true };
+	return 
+	{ 
+		iterator(n), 
+		true 
+	};
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
