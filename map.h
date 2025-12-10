@@ -169,7 +169,8 @@ struct map<Key,T,Compare,Allocator>::iterator
 };
 
 template<typename Key, typename T, typename Compare, typename Allocator>
-struct map<Key,T,Compare,Allocator>::const_iterator {
+struct map<Key,T,Compare,Allocator>::const_iterator 
+{
 	using iterator_category = std::bidirectional_iterator_tag;
 	using value_type = typename map::value_type;
 	using difference_type = std::ptrdiff_t;
@@ -178,38 +179,82 @@ struct map<Key,T,Compare,Allocator>::const_iterator {
 
 	const Node* node = nullptr;
 	const_iterator() = default;
+
 	explicit const_iterator(const Node* n) : node(n) {}
 	const_iterator(const iterator& it) : node(it.node) {}
-	reference operator*() const { return node->kv; }
-	pointer operator->() const { return std::addressof(node->kv); }
-	const_iterator& operator++() {
-		if (!node) return *this;
-		if (node->right) {
+
+	reference operator*() const 
+	{ 
+		return node->kv; 
+	}
+	pointer operator->() const 
+	{ 
+		return std::addressof(node->kv); 
+	}
+
+	const_iterator& operator++() 
+	{
+		if (!node) 
+		{
+			return *this;
+		}
+
+		if (node->right) 
+		{
 			const Node* p = node->right;
-			while (p->left) p = p->left;
+
+			while (p->left) 
+			{
+				p = p->left;
+			}
+
 			node = p;
 			return *this;
 		}
+
 		const Node* p = node->parent;
 		const Node* cur = node;
-		while (p && cur == p->right) { cur = p; p = p->parent; }
+
+		while (p && cur == p->right) 
+		{ 
+			cur = p; 
+			p = p->parent; 
+		}
+
 		node = p;
 		return *this;
 	}
-	const_iterator& operator--() {
+
+	const_iterator& operator--() 
+	{
 		if (!node) return *this;
-		if (node->left) {
+
+		if (node->left) 
+		{
 			const Node* p = node->left;
-			while (p->right) p = p->right;
+
+			while (p->right) 
+			{
+				p = p->right;
+			}
+
 			node = p;
 			return *this;
 		}
+
 		const Node* p = node->parent;
 		const Node* cur = node;
-		while (p && cur == p->left) { cur = p; p = p->parent; }
+
+		while (p && cur == p->left) 
+		{ 
+			cur = p; 
+			p = p->parent; 
+		}
+
 		node = p;
 		return *this;
 	}
+	
 	bool operator==(const const_iterator& o) const noexcept { return node == o.node; }
 	bool operator!=(const const_iterator& o) const noexcept { return node != o.node; }
 };
@@ -218,8 +263,14 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::Node*
 minimum(typename map<Key,T,Compare,Allocator>::Node* n) 
 {
-	if (!n) return nullptr;
-	while (n->left) n = n->left;
+	if (!n) 
+	{
+		return nullptr;
+	}
+	while (n->left) 
+	{
+		n = n->left;
+	}
 	return n;
 }
 
