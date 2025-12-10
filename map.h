@@ -130,42 +130,87 @@ struct map<Key,T,Compare,Allocator>::iterator
 
 	explicit iterator(Node* n) : node(n) {}
 
-	reference operator*() const { return node->kv; }
-	pointer operator->() const { return std::addressof(node->kv); }
+	reference operator*() const 
+	{ 
+		return node->kv; 
+	}
+	pointer operator->() const 
+	{ 
+		return std::addressof(node->kv); 
+	}
 
 	iterator& operator++() 
 	{
-		if (!node) return *this;
-		if (node->right) {
+		if (!node) 
+		{
+			return *this;
+		}
+
+		if (node->right) 
+		{
 			Node* p = node->right;
-			while (p->left) p = p->left;
+
+			while (p->left) 
+			{
+				p = p->left;
+			}
+
 			node = p;
 			return *this;
 		}
+
 		Node* p = node->parent;
 		Node* cur = node;
-		while (p && cur == p->right) { cur = p; p = p->parent; }
+
+		while (p && cur == p->right) 
+		{ 
+			cur = p; 
+			p = p->parent; 
+		}
+
 		node = p;
 		return *this;
 	}
-	iterator& operator--() {
-		if (!node) {
+
+	iterator& operator--() 
+	{
+		if (!node) 
+		{
 			return *this; 
 		}
-		if (node->left) {
+		if (node->left) 
+		{
 			Node* p = node->left;
-			while (p->right) p = p->right;
+
+			while (p->right) 
+			{
+				p = p->right;
+			}
+
 			node = p;
 			return *this;
 		}
+
 		Node* p = node->parent;
 		Node* cur = node;
-		while (p && cur == p->left) { cur = p; p = p->parent; }
+
+		while (p && cur == p->left) 
+		{ 
+			cur = p; 
+			p = p->parent; 
+		}
+
 		node = p;
 		return *this;
 	}
-	bool operator==(const iterator& o) const noexcept { return node == o.node; }
-	bool operator!=(const iterator& o) const noexcept { return node != o.node; }
+	bool operator==(const iterator& o) const noexcept 
+	{ 
+		return node == o.node; 
+	}
+	bool operator!=(const iterator& o) const noexcept 
+	{ 
+		return node != o.node; 
+	}
 };
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -254,9 +299,15 @@ struct map<Key,T,Compare,Allocator>::const_iterator
 		node = p;
 		return *this;
 	}
-	
-	bool operator==(const const_iterator& o) const noexcept { return node == o.node; }
-	bool operator!=(const const_iterator& o) const noexcept { return node != o.node; }
+
+	bool operator==(const const_iterator& o) const noexcept 
+	{ 
+		return node == o.node; 
+	}
+	bool operator!=(const const_iterator& o) const noexcept 
+	{ 
+		return node != o.node; 
+	}
 };
 
 template<typename Key, typename T, typename Compare, typename Allocator>
