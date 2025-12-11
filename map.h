@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <type_traits>
+#include <vector>
 #include <limits>
 
 template<
@@ -126,9 +127,10 @@ struct map<Key,T,Compare,Allocator>::iterator
 	using reference = value_type&;
 
 	Node* node = nullptr;
+	map* owner = nullptr;
 	iterator() = default;
 
-	explicit iterator(Node* n) : node(n) {}
+	explicit iterator(Node* n, map* o = nullptr) : node(n), owner(o) {}
 
 	reference operator*() const 
 	{ 
@@ -176,7 +178,8 @@ struct map<Key,T,Compare,Allocator>::iterator
 	{
 		if (!node) 
 		{
-			return *this; 
+			if (owner) { node = maximum(owner->root_); }
+			return *this;
 		}
 		if (node->left) 
 		{
@@ -223,10 +226,11 @@ struct map<Key,T,Compare,Allocator>::const_iterator
 	using reference = const value_type&;
 
 	const Node* node = nullptr;
+	const map* owner = nullptr;
 	const_iterator() = default;
 
-	explicit const_iterator(const Node* n) : node(n) {}
-	const_iterator(const iterator& it) : node(it.node) {}
+	explicit const_iterator(const Node* n, const map* o = nullptr) : node(n), owner(o) {}
+	const_iterator(const iterator& it) : node(it.node), owner(it.owner) {}
 
 	reference operator*() const 
 	{ 
@@ -272,7 +276,10 @@ struct map<Key,T,Compare,Allocator>::const_iterator
 
 	const_iterator& operator--() 
 	{
-		if (!node) return *this;
+		if (!node) {
+			if (owner) { node = maximum(owner->root_); }
+			return *this;
+		}
 
 		if (node->left) 
 		{
@@ -344,28 +351,28 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
 map<Key,T,Compare,Allocator>::begin() noexcept 
 { 
-	return iterator(minimum(root_)); 
+	return iterator(minimum(root_), this); 
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
 map<Key,T,Compare,Allocator>::begin() const noexcept 
 { 
-	return const_iterator(minimum(root_)); 
+	return const_iterator(minimum(root_), this); 
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
 map<Key,T,Compare,Allocator>::end() noexcept 
 { 
-	return iterator(nullptr); 
+	return iterator(nullptr, this); 
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::const_iterator
 map<Key,T,Compare,Allocator>::end() const noexcept 
 { 
-	return const_iterator(nullptr); 
+	return const_iterator(nullptr, this); 
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -407,7 +414,7 @@ map<Key,T,Compare,Allocator>::find(const key_type& key)
 	{
 		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) 
 		{
-			return iterator(cur);
+			return iterator(cur, this);
 		}
 		if (comp_(key, cur->kv.first)) 
 		{
@@ -430,7 +437,7 @@ map<Key,T,Compare,Allocator>::find(const key_type& key) const
 	{
 		if (!comp_(cur->kv.first, key) && !comp_(key, cur->kv.first)) 
 		{
-			return const_iterator(cur);
+			return const_iterator(cur, this);
 		}
 		if (comp_(key, cur->kv.first)) 
 		{
@@ -463,7 +470,7 @@ map<Key,T,Compare,Allocator>::lower_bound(const key_type& key)
 			x = x->left;
 		}
 	}
-	return iterator(res);
+	return iterator(res, this);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -485,7 +492,7 @@ map<Key,T,Compare,Allocator>::lower_bound(const key_type& key) const
 			x = x->left;
 		}
 	}
-	return const_iterator(res);
+	return const_iterator(res, this);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -507,7 +514,7 @@ map<Key,T,Compare,Allocator>::upper_bound(const key_type& key)
 			x = x->right;
 		}
 	}
-	return iterator(res);
+	return iterator(res, this);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -529,7 +536,7 @@ map<Key,T,Compare,Allocator>::upper_bound(const key_type& key) const
 			x = x->right;
 		}
 	}
-	return const_iterator(res);
+	return const_iterator(res, this);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -544,7 +551,7 @@ map<Key,T,Compare,Allocator>::insert(const value_type& v)
 		parent = cur;
 		if (!comp_(cur->kv.first, v.first) && !comp_(v.first, cur->kv.first)) 
 		{
-			return { iterator(cur), false };
+			return { iterator(cur, this), false };
 		}
 		if (comp_(v.first, cur->kv.first)) 
 		{
@@ -573,9 +580,8 @@ map<Key,T,Compare,Allocator>::insert(const value_type& v)
 	}
 
 	++size_;
-	return 
-	{ 
-		iterator(n), 
+	return { 
+		iterator(n, this), 
 		true 
 	};
 }
@@ -639,5 +645,64 @@ map<Key,T,Compare,Allocator>::at(const key_type& key) const
 		throw std::out_of_range("map::at");
 	}
 	return it.node->kv.second;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::iterator
+map<Key,T,Compare,Allocator>::erase(const_iterator pos)
+{
+	if (!pos.node) return end();
+	Node* z = const_cast<Node*>(pos.node);
+
+	iterator succ(pos.node, this);
+	++succ;
+
+	auto transplant = [&](Node* u, Node* v) {
+		if (!u->parent) {
+			root_ = v;
+		} else if (u == u->parent->left) {
+			u->parent->left = v;
+		} else {
+			u->parent->right = v;
+		}
+		if (v) v->parent = u->parent;
+	};
+
+	if (!z->left) {
+		transplant(z, z->right);
+	} else if (!z->right) {
+		transplant(z, z->left);
+	} else {
+		Node* y = minimum(z->right);
+		if (y->parent != z) {
+			transplant(y, y->right);
+			y->right = z->right;
+			if (y->right) y->right->parent = y;
+		}
+		transplant(z, y);
+		y->left = z->left;
+		if (y->left) y->left->parent = y;
+	}
+
+	delete z;
+	--size_;
+	return succ;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::size_type
+map<Key,T,Compare,Allocator>::erase(const key_type& key)
+{
+	auto it = find(key);
+	if (it == end()) return 0;
+	erase(it);
+	return 1;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::size_type
+map<Key,T,Compare,Allocator>::count(const key_type& key) const
+{
+	return find(key) != end() ? 1 : 0;
 }
 
