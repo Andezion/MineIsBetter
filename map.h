@@ -651,37 +651,67 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::iterator
 map<Key,T,Compare,Allocator>::erase(const_iterator pos)
 {
-	if (!pos.node) return end();
+	if (!pos.node) 
+	{
+		return end();
+	}
+
 	Node* z = const_cast<Node*>(pos.node);
 
 	iterator succ(pos.node, this);
 	++succ;
 
-	auto transplant = [&](Node* u, Node* v) {
-		if (!u->parent) {
+	auto transplant = [&](Node* u, Node* v) 
+	{
+		if (!u->parent) 
+		{
 			root_ = v;
-		} else if (u == u->parent->left) {
+		} 
+		else if (u == u->parent->left) 
+		{
 			u->parent->left = v;
-		} else {
+		}
+		else 
+		{
 			u->parent->right = v;
 		}
-		if (v) v->parent = u->parent;
+
+		if (v) 
+		{
+			v->parent = u->parent;
+		}
 	};
 
-	if (!z->left) {
+	if (!z->left) 
+	{
 		transplant(z, z->right);
-	} else if (!z->right) {
+	} 
+	else if (!z->right) 
+	{
 		transplant(z, z->left);
-	} else {
+	} 
+	else 
+	{
 		Node* y = minimum(z->right);
-		if (y->parent != z) {
+
+		if (y->parent != z) 
+		{
 			transplant(y, y->right);
 			y->right = z->right;
-			if (y->right) y->right->parent = y;
+
+			if (y->right) 
+			{
+				y->right->parent = y;
+			}
 		}
+
 		transplant(z, y);
 		y->left = z->left;
-		if (y->left) y->left->parent = y;
+
+		if (y->left) 
+		{
+			y->left->parent = y;
+		}
 	}
 
 	delete z;
@@ -694,7 +724,11 @@ typename map<Key,T,Compare,Allocator>::size_type
 map<Key,T,Compare,Allocator>::erase(const key_type& key)
 {
 	auto it = find(key);
-	if (it == end()) return 0;
+
+	if (it == end()) 
+	{
+		return 0;
+	}
 	erase(it);
 	return 1;
 }
