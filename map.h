@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <vector>
 #include <limits>
+#include <optional>
 
 template<
 	typename Key,
@@ -32,22 +33,29 @@ public:
 	using difference_type = std::ptrdiff_t;
 
 private:
+	enum Color { RED, BLACK };
+
 	struct Node
 	{
 		value_type kv;
 		Node* parent;
 		Node* left;
 		Node* right;
+		Color color;
 
 		template<typename... Args>
 		explicit Node(Args&&... args)
-			: kv(std::forward<Args>(args)...), parent(nullptr), left(nullptr), right(nullptr) {}
+			: kv(std::forward<Args>(args)...), parent(nullptr), left(nullptr), right(nullptr), color(RED) {}
 	};
 
 	Node* root_ = nullptr;
 	size_type size_ = 0;
 	key_compare comp_;
 	allocator_type alloc_;
+	
+	using node_allocator_type = typename std::allocator_traits<allocator_type>::template rebind_alloc<Node>;
+	using node_alloc_traits = std::allocator_traits<node_allocator_type>;
+	node_allocator_type node_alloc_;
 
 public:
 	struct iterator;
@@ -69,6 +77,11 @@ public:
 	allocator_type get_allocator() const noexcept { return alloc_; }
 
 	void swap(map& other) noexcept;
+	
+	struct value_compare { key_compare comp; explicit value_compare(key_compare c = key_compare()) : comp(c) {} bool operator()(const value_type& a, const value_type& b) const { return comp(a.first, b.first); } };
+	bool contains(const key_type& key) const;
+	std::optional<value_type> extract(const key_type& key);
+	void merge(map& other);
 
 	iterator begin() noexcept;
 	const_iterator begin() const noexcept;
@@ -332,6 +345,322 @@ minimum(typename map<Key,T,Compare,Allocator>::Node* n)
 		n = n->left;
 	}
 	return n;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::Node*
+map_create_node(map<Key,T,Compare,Allocator>& m, const typename map<Key,T,Compare,Allocator>::value_type& v)
+{
+	using Map = map<Key,T,Compare,Allocator>;
+	Map::node_allocator_type &alloc = m.node_alloc_;
+	Map::node_alloc_traits::allocate(alloc, 1);
+	Node* p = Map::node_alloc_traits::allocate(alloc, 1);
+	try {
+		Map::node_alloc_traits::construct(alloc, p, v);
+	} catch(...) {
+		Map::node_alloc_traits::deallocate(alloc, p, 1);
+		throw;
+	}
+	return p;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void
+map_destroy_node(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* p)
+{
+	if (!p) 
+	{
+		return;
+	}
+
+	using Map = map<Key,T,Compare,Allocator>;
+
+	Map::node_allocator_type &alloc = m.node_alloc_;
+	Map::node_alloc_traits::destroy(alloc, p);
+	Map::node_alloc_traits::deallocate(alloc, p, 1);
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void left_rotate(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* x)
+{
+	using Node = typename map<Key,T,Compare,Allocator>::Node;
+
+	Node* y = x->right;
+	x->right = y->left;
+
+	if (y->left) 
+	{
+		y->left->parent = x;
+	}
+
+	y->parent = x->parent;
+	if (!x->parent) 
+	{
+		m.root_ = y;
+	}
+	else if (x == x->parent->left) 
+	{
+		x->parent->left = y; 
+	}
+	else 
+	{
+		x->parent->right = y;
+	}
+
+	y->left = x;
+	x->parent = y;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void right_rotate(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* x)
+{
+	using Node = typename map<Key,T,Compare,Allocator>::Node;
+
+	Node* y = x->left;
+	x->left = y->right;
+
+	if (y->right) 
+	{
+		y->right->parent = x;
+	}
+
+	y->parent = x->parent;
+
+	if (!x->parent) 
+	{
+		m.root_ = y;
+	}
+	else if (x == x->parent->right) 
+	{
+		x->parent->right = y; 
+	}
+	else 
+	{
+		x->parent->left = y;
+	}
+
+	y->right = x;
+	x->parent = y;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void rb_insert_fixup(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* z)
+{
+	using Node = typename map<Key,T,Compare,Allocator>::Node;
+	while (z->parent && z->parent->color == map<Key,T,Compare,Allocator>::RED) 
+	{
+		Node* gp = z->parent->parent;
+
+		if (z->parent == gp->left) 
+		{
+			Node* y = gp->right;
+
+			if (y && y->color == map<Key,T,Compare,Allocator>::RED) 
+			{
+				z->parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				y->color = map<Key,T,Compare,Allocator>::BLACK;
+				gp->color = map<Key,T,Compare,Allocator>::RED;
+				z = gp;
+			} 
+			else 
+			{
+				if (z == z->parent->right) 
+				{ 
+					z = z->parent; 
+					left_rotate(m, z); 
+				}
+
+				z->parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				gp->color = map<Key,T,Compare,Allocator>::RED;
+
+				right_rotate(m, gp);
+			}
+		} 
+		else 
+		{
+			Node* y = gp->left;
+
+			if (y && y->color == map<Key,T,Compare,Allocator>::RED) 
+			{
+				z->parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				y->color = map<Key,T,Compare,Allocator>::BLACK;
+				gp->color = map<Key,T,Compare,Allocator>::RED;
+
+				z = gp;
+			} 
+			else 
+			{
+				if (z == z->parent->left) 
+				{ 
+					z = z->parent; 
+					right_rotate(m, z); 
+				}
+
+				z->parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				gp->color = map<Key,T,Compare,Allocator>::RED;
+
+				left_rotate(m, gp);
+			}
+		}
+	}
+	if (m.root_) 
+	{
+		m.root_->color = map<Key,T,Compare,Allocator>::BLACK;
+	}
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void transplant(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* u, typename map<Key,T,Compare,Allocator>::Node* v)
+{
+	if (!u->parent) 
+	{
+		m.root_ = v;
+	}
+	else if (u == u->parent->left) 
+	{
+		u->parent->left = v;
+	}
+	else 
+	{
+		u->parent->right = v;
+	}
+
+	if (v) 
+	{
+		v->parent = u->parent;
+	}
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void rb_delete_fixup(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* x, typename map<Key,T,Compare,Allocator>::Node* x_parent)
+{
+	using Node = typename map<Key,T,Compare,Allocator>::Node;
+	while ((x != m.root_) && (!x || x->color == map<Key,T,Compare,Allocator>::BLACK)) 
+	{
+		if (x_parent && x == x_parent->left) 
+		{
+			Node* w = x_parent->right;
+			if (w && w->color == map<Key,T,Compare,Allocator>::RED) 
+			{
+				w->color = map<Key,T,Compare,Allocator>::BLACK;
+				x_parent->color = map<Key,T,Compare,Allocator>::RED;
+				left_rotate(m, x_parent);
+
+				w = x_parent->right;
+			}
+			if ((!w->left || w->left->color == map<Key,T,Compare,Allocator>::BLACK) && 
+			(!w->right || w->right->color == map<Key,T,Compare,Allocator>::BLACK)) 
+			{
+				if (w) 
+				{
+					w->color = map<Key,T,Compare,Allocator>::RED;
+				}
+				x = x_parent;
+				x_parent = x->parent;
+			} 
+			else 
+			{
+				if (!w->right || w->right->color == map<Key,T,Compare,Allocator>::BLACK) 
+				{
+					if (w->left) 
+					{
+						w->left->color = map<Key,T,Compare,Allocator>::BLACK;
+					}
+					if (w) 
+					{
+						w->color = map<Key,T,Compare,Allocator>::RED;
+					}
+
+					right_rotate(m, w);
+					w = x_parent->right;
+				}
+
+				if (w) 
+				{
+					w->color = x_parent->color;
+				}
+
+				x_parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				if (w && w->right) 
+				{
+					w->right->color = map<Key,T,Compare,Allocator>::BLACK;
+				}
+				left_rotate(m, x_parent);
+				x = m.root_;
+				break;
+			}
+		} 
+		else 
+		{
+			Node* w = x_parent ? x_parent->left : nullptr;
+
+			if (w && w->color == map<Key,T,Compare,Allocator>::RED) 
+			{
+				w->color = map<Key,T,Compare,Allocator>::BLACK;
+				if (x_parent) 
+				{
+					x_parent->color = map<Key,T,Compare,Allocator>::RED;
+				}
+				if (x_parent) 
+				{
+					right_rotate(m, x_parent);
+				}
+				w = x_parent ? x_parent->left : nullptr;
+			}
+			if ((!w->left || w->left->color == map<Key,T,Compare,Allocator>::BLACK) 
+			&& (!w->right || w->right->color == map<Key,T,Compare,Allocator>::BLACK)) 
+			{
+				if (w) 
+				{
+					w->color = map<Key,T,Compare,Allocator>::RED;
+				}
+
+				x = x_parent;
+				x_parent = x ? x->parent : nullptr;
+			} 
+			else 
+			{
+				if (!w->left || w->left->color == map<Key,T,Compare,Allocator>::BLACK) 
+				{
+					if (w->right) 
+					{
+						w->right->color = map<Key,T,Compare,Allocator>::BLACK;
+					}
+					if (w) 
+					{
+						w->color = map<Key,T,Compare,Allocator>::RED;
+					}
+
+					left_rotate(m, w);
+					w = x_parent ? x_parent->left : nullptr;
+				}
+
+				if (w) 
+				{
+					w->color = x_parent ? x_parent->color : map<Key,T,Compare,Allocator>::BLACK;
+				}
+
+				if (x_parent) 
+				{
+					x_parent->color = map<Key,T,Compare,Allocator>::BLACK;
+				}
+				if (w && w->left) 
+				{
+					w->left->color = map<Key,T,Compare,Allocator>::BLACK;
+				}
+				if (x_parent) 
+				{
+					right_rotate(m, x_parent);
+				}
+				x = m.root_;
+				break;
+			}
+		}
+	}
+	if (x) 
+	{
+		x->color = map<Key,T,Compare,Allocator>::BLACK;
+	}
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -663,47 +992,26 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 std::pair<typename map<Key,T,Compare,Allocator>::iterator, bool>
 map<Key,T,Compare,Allocator>::insert(const value_type& v) 
 {
+	// allocate node via allocator
 	Node* parent = nullptr;
 	Node* cur = root_;
-
-	while (cur) 
-	{
+	while (cur) {
 		parent = cur;
-		if (!comp_(cur->kv.first, v.first) && !comp_(v.first, cur->kv.first)) 
-		{
+		if (!comp_(cur->kv.first, v.first) && !comp_(v.first, cur->kv.first)) {
 			return { iterator(cur, this), false };
 		}
-		if (comp_(v.first, cur->kv.first)) 
-		{
-			cur = cur->left; 
-		}
-		else 
-		{
-			cur = cur->right;
-		}
+		if (comp_(v.first, cur->kv.first)) cur = cur->left; else cur = cur->right;
 	}
-
-	Node* n = new Node(v);
+	// create node
+	Node* n = map_create_node<Key,T,Compare,Allocator>(*this, v);
 	n->parent = parent;
-
-	if (!parent) 
-	{
-		root_ = n;
-	}
-	else if (comp_(n->kv.first, parent->kv.first)) 
-	{
-		parent->left = n; 
-	}
-	else 
-	{
-		parent->right = n;
-	}
-
+	n->left = n->right = nullptr;
+	n->color = RED;
+	if (!parent) root_ = n;
+	else if (comp_(n->kv.first, parent->kv.first)) parent->left = n; else parent->right = n;
 	++size_;
-	return { 
-		iterator(n, this), 
-		true 
-	};
+	rb_insert_fixup<Key,T,Compare,Allocator>(*this, n);
+	return { iterator(n, this), true };
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -781,61 +1089,44 @@ map<Key,T,Compare,Allocator>::erase(const_iterator pos)
 	iterator succ(pos.node, this);
 	++succ;
 
-	auto transplant = [&](Node* u, Node* v) 
-	{
-		if (!u->parent) 
-		{
-			root_ = v;
-		} 
-		else if (u == u->parent->left) 
-		{
-			u->parent->left = v;
-		}
-		else 
-		{
-			u->parent->right = v;
-		}
+	auto transplant_local = [&](Node* u, Node* v) {
+		if (!u->parent) root_ = v; else if (u == u->parent->left) u->parent->left = v; else u->parent->right = v; if (v) v->parent = u->parent; };
 
-		if (v) 
-		{
-			v->parent = u->parent;
-		}
-	};
-
-	if (!z->left) 
-	{
-		transplant(z, z->right);
-	} 
-	else if (!z->right) 
-	{
-		transplant(z, z->left);
-	} 
-	else 
-	{
-		Node* y = minimum(z->right);
-
-		if (y->parent != z) 
-		{
-			transplant(y, y->right);
+	// RB-delete
+	Node* y = z;
+	auto y_original_color = y->color;
+	Node* x = nullptr;
+	Node* x_parent = nullptr;
+	if (!z->left) {
+		x = z->right;
+		x_parent = z->parent;
+		transplant_local(z, z->right);
+	} else if (!z->right) {
+		x = z->left;
+		x_parent = z->parent;
+		transplant_local(z, z->left);
+	} else {
+		y = minimum(z->right);
+		y_original_color = y->color;
+		x = y->right;
+		if (y->parent == z) {
+			x_parent = y;
+			if (x) x->parent = y;
+		} else {
+			transplant_local(y, y->right);
 			y->right = z->right;
-
-			if (y->right) 
-			{
-				y->right->parent = y;
-			}
+			if (y->right) y->right->parent = y;
+			x_parent = y->parent;
 		}
-
-		transplant(z, y);
+		transplant_local(z, y);
 		y->left = z->left;
-
-		if (y->left) 
-		{
-			y->left->parent = y;
-		}
+		if (y->left) y->left->parent = y;
+		y->color = z->color;
 	}
 
-	delete z;
+	map_destroy_node<Key,T,Compare,Allocator>(*this, z);
 	--size_;
+	if (y_original_color == BLACK) rb_delete_fixup<Key,T,Compare,Allocator>(*this, x, x_parent);
 	return succ;
 }
 
@@ -851,6 +1142,36 @@ map<Key,T,Compare,Allocator>::erase(const key_type& key)
 	}
 	erase(it);
 	return 1;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+bool map<Key,T,Compare,Allocator>::contains(const key_type& key) const
+{
+	return find(key) != end();
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+std::optional<typename map<Key,T,Compare,Allocator>::value_type>
+map<Key,T,Compare,Allocator>::extract(const key_type& key)
+{
+	auto it = find(key);
+	if (it == end()) return std::nullopt;
+	value_type val = std::move(it.node->kv);
+	erase(it);
+	return val;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void map<Key,T,Compare,Allocator>::merge(map& other)
+{
+	// Move elements from other to this where keys are not present
+	while (other.root_) {
+		Node* n = minimum(other.root_);
+		if (!n) break;
+		auto kv = other.extract(n->kv.first);
+		if (!kv) break;
+		insert(std::move(*kv));
+	}
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
