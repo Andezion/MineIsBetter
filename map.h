@@ -68,6 +68,8 @@ public:
 
 	allocator_type get_allocator() const noexcept { return alloc_; }
 
+	void swap(map& other) noexcept;
+
 	iterator begin() noexcept;
 	const_iterator begin() const noexcept;
 	iterator end() noexcept;
@@ -334,6 +336,26 @@ minimum(typename map<Key,T,Compare,Allocator>::Node* n)
 
 template<typename Key, typename T, typename Compare, typename Allocator>
 typename map<Key,T,Compare,Allocator>::Node*
+clone_subtree(const typename map<Key,T,Compare,Allocator>::Node* src, typename map<Key,T,Compare,Allocator>::Node* parent)
+{
+	if (!src) 
+	{
+		return nullptr;
+	}
+
+	using Map = map<Key,T,Compare,Allocator>;
+	Map::Node* n = new Map::Node(src->kv);
+
+	n->parent = parent;
+
+	n->left = clone_subtree<Key,T,Compare,Allocator>(src->left, n);
+	n->right = clone_subtree<Key,T,Compare,Allocator>(src->right, n);
+
+	return n;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::Node*
 maximum(typename map<Key,T,Compare,Allocator>::Node* n) 
 {
 	if (!n) 
@@ -373,6 +395,34 @@ typename map<Key,T,Compare,Allocator>::const_iterator
 map<Key,T,Compare,Allocator>::end() const noexcept 
 { 
 	return const_iterator(nullptr, this); 
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::reverse_iterator
+map<Key,T,Compare,Allocator>::rbegin() noexcept 
+{ 
+	return reverse_iterator(end()); 
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::const_reverse_iterator
+map<Key,T,Compare,Allocator>::rbegin() const noexcept 
+{ 
+	return const_reverse_iterator(end()); 
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::reverse_iterator
+map<Key,T,Compare,Allocator>::rend() noexcept 
+{ 
+	return reverse_iterator(begin()); 
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+typename map<Key,T,Compare,Allocator>::const_reverse_iterator
+map<Key,T,Compare,Allocator>::rend() const noexcept 
+{ 
+	return const_reverse_iterator(begin()); 
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -426,6 +476,76 @@ map<Key,T,Compare,Allocator>::find(const key_type& key)
 		}
 	}
 	return end();
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+map<Key,T,Compare,Allocator>::map(const map& other)
+	: root_(nullptr), size_(0), comp_(other.comp_), alloc_(other.alloc_)
+{
+	root_ = clone_subtree<Key,T,Compare,Allocator>(other.root_, nullptr);
+	size_ = other.size_;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+map<Key,T,Compare,Allocator>::map(map&& other) noexcept
+	: root_(other.root_), size_(other.size_), comp_(std::move(other.comp_)), alloc_(std::move(other.alloc_))
+{
+	other.root_ = nullptr;
+	other.size_ = 0;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+map<Key,T,Compare,Allocator>&
+map<Key,T,Compare,Allocator>::operator=(const map& other)
+{
+	if (this == &other) 
+	{
+		return *this;
+	}
+
+	clear();
+
+	comp_ = other.comp_;
+	alloc_ = other.alloc_;
+
+	root_ = clone_subtree<Key,T,Compare,Allocator>(other.root_, nullptr);
+	size_ = other.size_;
+
+	return *this;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+map<Key,T,Compare,Allocator>&
+map<Key,T,Compare,Allocator>::operator=(map&& other) noexcept
+{
+	if (this == &other) 
+	{
+		return *this;
+	}
+
+	clear();
+
+	root_ = other.root_;
+	size_ = other.size_;
+
+	comp_ = std::move(other.comp_);
+	alloc_ = std::move(other.alloc_);
+
+	other.root_ = nullptr;
+	other.size_ = 0;
+
+	return *this;
+}
+
+template<typename Key, typename T, typename Compare, typename Allocator>
+void map<Key,T,Compare,Allocator>::swap(map& other) noexcept
+{
+	using std::swap;
+	
+	swap(root_, other.root_);
+	swap(size_, other.size_);
+	swap(comp_, other.comp_);
+	swap(alloc_, other.alloc_);
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
