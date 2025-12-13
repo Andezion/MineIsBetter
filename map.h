@@ -831,7 +831,10 @@ map<Key,T,Compare,Allocator>::find(const key_type& key)
 template<typename Key, typename T, typename Compare, typename Allocator>
 map<Key, T, Compare, Allocator>::map(const key_compare &comp, const allocator_type &alloc)
 {
-
+	root_ = nullptr;
+	size_ = 0;
+	comp_ = comp;
+	alloc_ = alloc;
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
@@ -854,7 +857,15 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 map<Key, T, Compare, Allocator>::map(std::initializer_list<value_type> init, const key_compare &comp,
 	const allocator_type &alloc)
 {
+	root_ = nullptr;
+	size_ = 0;
+	comp_ = comp;
+	alloc_ = alloc;
 
+	for (const auto &v : init) 
+	{
+		insert(v);
+	}
 }
 
 template<typename Key, typename T, typename Compare, typename Allocator>
