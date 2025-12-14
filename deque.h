@@ -27,10 +27,18 @@ private:
     size_type cap_ = 0;
     size_type head_ = 0;
 
-    [[nodiscard]] size_type idx(const size_type pos) const noexcept { return (head_ + pos) % cap_; }
-    void destroy_range(const size_type from, const size_type to) noexcept {
-        if (!data_) return;
-        for (size_type i = from; i != to; i = (i + 1) % cap_) {
+    [[nodiscard]] size_type idx(const size_type pos) const noexcept
+    {
+        return (head_ + pos) % cap_;
+    }
+    void destroy_range(const size_type from, const size_type to) noexcept
+    {
+        if (!data_)
+        {
+            return;
+        }
+        for (size_type i = from; i != to; i = (i + 1) % cap_)
+        {
             std::allocator_traits<allocator_type>::destroy(alloc_, data_ + i);
         }
     }
@@ -49,24 +57,68 @@ public:
         using reference = T&;
 
         iterator() = default;
-        iterator(deque* d, size_type p): d_(d), pos_(p) {}
+        iterator(deque* d, const size_type p): d_(d), pos_(p) {}
 
-        reference operator*() const { return (*d_)[pos_]; }
-        pointer operator->() const { return &(*d_)[pos_]; }
+        reference operator*() const
+        {
+            return (*d_)[pos_];
+        }
+        pointer operator->() const
+        {
+            return &(*d_)[pos_];
+        }
 
-        iterator& operator++() { ++pos_; return *this; }
-        iterator operator++(int) { iterator t = *this; ++*this; return t; }
-        iterator& operator--() { --pos_; return *this; }
-        iterator operator--(int) { iterator t = *this; --*this; return t; }
+        iterator& operator++()
+        {
+            ++pos_;
+            return *this;
+        }
+        iterator operator++(int)
+        {
+            iterator t = *this;
+            ++*this; return t;
+        }
+        iterator& operator--()
+        {
+            --pos_;
+            return *this;
+        }
+        iterator operator--(int)
+        {
+            iterator t = *this;
+            --*this; return t;
+        }
 
-        iterator& operator+=(difference_type n) { pos_ += n; return *this; }
-        iterator operator+(difference_type n) const { return iterator(d_, pos_ + n); }
-        iterator operator-(difference_type n) const { return iterator(d_, pos_ - n); }
-        difference_type operator-(const iterator& o) const { return static_cast<difference_type>(pos_) - static_cast<difference_type>(o.pos_); }
+        iterator& operator+=(const difference_type n)
+        {
+            pos_ += n;
+            return *this;
+        }
+        iterator operator+(const difference_type n) const
+        {
+            return iterator(d_, pos_ + n);
+        }
+        iterator operator-(const difference_type n) const
+        {
+            return iterator(d_, pos_ - n);
+        }
+        difference_type operator-(const iterator& o) const
+        {
+            return static_cast<difference_type>(pos_) - static_cast<difference_type>(o.pos_);
+        }
 
-        bool operator==(const iterator& o) const { return d_ == o.d_ && pos_ == o.pos_; }
-        bool operator!=(const iterator& o) const { return !(*this == o); }
-        bool operator<(const iterator& o) const { return pos_ < o.pos_; }
+        bool operator==(const iterator& o) const
+        {
+            return d_ == o.d_ && pos_ == o.pos_;
+        }
+        bool operator!=(const iterator& o) const
+        {
+            return !(*this == o);
+        }
+        bool operator<(const iterator& o) const
+        {
+            return pos_ < o.pos_;
+        }
     };
 
     using const_iterator = iterator;
@@ -99,7 +151,7 @@ public:
     template <class... Args>  iterator emplace (const_iterator position, Args&&... args);
     template <class... Args>  void emplace_back (Args&&... args);
     template <class... Args>  void emplace_front (Args&&... args);
-    bool empty() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
     iterator end() noexcept;
     const_iterator end() const noexcept;
     iterator erase (const_iterator position);
@@ -125,8 +177,8 @@ public:
     const_reverse_iterator rend() const;
     void resize (size_type n, T val = T());
     void shrink_to_fit();
-    size_type size() const;
-    void swap (deque& x);
+    [[nodiscard]] size_type size() const;
+    void swap (deque& x) noexcept;
 
     template <class U>  friend bool operator== (const deque<U>& lhs, const deque<U>& rhs);
     template <class U>  friend bool operator!= (const deque<U>& lhs, const deque<U>& rhs);
@@ -140,10 +192,10 @@ public:
 
 template<typename T>
 deque<T>::deque(const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {}
+    : alloc_(alloc), data_(nullptr) {}
 
 template<typename T>
-deque<T>::deque(size_type n)
+deque<T>::deque(const size_type n)
     : alloc_(allocator_type()), data_(nullptr), sz_(0), cap_(0), head_(0) {
     if (n > 0) {
         cap_ = n;
@@ -563,7 +615,7 @@ typename deque<T>::size_type deque<T>::size() const
 }
 
 template<typename T>
-void deque<T>::swap(deque& x)
+void deque<T>::swap(deque& x) noexcept
 {
     using std::swap;
     swap(alloc_, x.alloc_);
