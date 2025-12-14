@@ -25,9 +25,8 @@ private:
     T* data_ = nullptr;
     size_type sz_ = 0;
     size_type cap_ = 0;
-    size_type head_ = 0; // index of first element
+    size_type head_ = 0;
 
-    // helpers
     size_type idx(size_type pos) const noexcept { return (head_ + pos) % cap_; }
     void destroy_range(size_type from, size_type to) noexcept {
         if (!data_) return;
@@ -37,10 +36,11 @@ private:
     }
 
 public:
-    // iterator implementation (random-access via index)
     class iterator {
+    public:
         deque* d_ = nullptr;
         size_type pos_ = 0;
+    
     public:
         using iterator_category = std::random_access_iterator_tag;
         using value_type = T;
@@ -73,7 +73,6 @@ public:
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = reverse_iterator;
 
-    // --- declarations matching original interface ---
     explicit deque (const allocator_type& alloc = allocator_type());
     explicit deque (size_type n);
     deque (size_type n, const value_type& val, const allocator_type& alloc = allocator_type());
@@ -128,17 +127,15 @@ public:
     size_type size() const;
     void swap (deque& x);
 
-    template <class U, class Alloc>  friend bool operator== (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
-    template <class U, class Alloc>  friend bool operator!= (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
-    template <class U, class Alloc>  friend bool operator<  (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
-    template <class U, class Alloc>  friend bool operator<= (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
-    template <class U, class Alloc>  friend bool operator>  (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
-    template <class U, class Alloc>  friend bool operator>= (const deque<U,Alloc>& lhs, const deque<U,Alloc>& rhs);
+    template <class U>  friend bool operator== (const deque<U>& lhs, const deque<U>& rhs);
+    template <class U>  friend bool operator!= (const deque<U>& lhs, const deque<U>& rhs);
+    template <class U>  friend bool operator<  (const deque<U>& lhs, const deque<U>& rhs);
+    template <class U>  friend bool operator<= (const deque<U>& lhs, const deque<U>& rhs);
+    template <class U>  friend bool operator>  (const deque<U>& lhs, const deque<U>& rhs);
+    template <class U>  friend bool operator>= (const deque<U>& lhs, const deque<U>& rhs);
 
-    template <class U, class Alloc>  friend void swap (deque<U,Alloc>& x, deque<U,Alloc>& y);
+    template <class U>  friend void swap (deque<U>& x, deque<U>& y);
 };
-
-// -------------------- Implementations --------------------
 
 template<typename T>
 deque<T>::deque(const allocator_type& alloc)
@@ -334,7 +331,6 @@ typename deque<T>::iterator deque<T>::erase(const_iterator first, const_iterator
     size_type f = static_cast<size_type>(first.pos_);
     size_type l = static_cast<size_type>(last.pos_);
     if (f >= l) return iterator(this, f);
-    // simple implementation: move elements after l to f
     for (size_type i = l; i < sz_; ++i) {
         (*this)[i - (l - f)] = std::move((*this)[i]);
     }
@@ -363,29 +359,23 @@ template<typename T>
 void deque<T>::insert(iterator position, size_type n, const T& val) {
     size_type pos = static_cast<size_type>(position.pos_);
     if (n == 0) return;
-    // ensure capacity
     size_type need = sz_ + n;
     if (need > cap_) {
         size_type newcap = std::max<size_type>(cap_ ? cap_ * 2 : 1, need);
         T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, newcap);
-        // copy prefix
         for (size_type i = 0; i < pos; ++i) {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + i, std::move((*this)[i]));
         }
-        // fill inserted
         for (size_type i = 0; i < n; ++i) {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + pos + i, val);
         }
-        // copy suffix
         for (size_type i = pos; i < sz_; ++i) {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + n + i, std::move((*this)[i]));
         }
-        // destroy old
         clear();
         if (data_) std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
         data_ = newdata; cap_ = newcap; head_ = 0; sz_ = need;
     } else {
-        // shift elements to make room
         for (size_type i = sz_; i > pos; --i) {
             (*this)[i] = std::move((*this)[i-1]);
         }
@@ -476,7 +466,7 @@ void deque<T>::push_front(const T& val) {
     } else if (sz_ + 1 > cap_) {
         size_type newcap = cap_ * 2;
         T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, newcap);
-        // shift by 1
+    
         for (size_type i = 0; i < sz_; ++i) {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + i + 1, std::move((*this)[i]));
         }
@@ -535,36 +525,35 @@ void deque<T>::swap(deque& x) {
     swap(head_, x.head_);
 }
 
-// free functions
-template <class T, class Alloc>
-bool operator==(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) {
+template <class T>
+bool operator==(const deque<T>& lhs, const deque<T>& rhs) {
     if (lhs.sz_ != rhs.sz_) return false;
-    for (typename deque<T,Alloc>::size_type i = 0; i < lhs.sz_; ++i) if (lhs[i] != rhs[i]) return false;
+    for (typename deque<T>::size_type i = 0; i < lhs.sz_; ++i) if (lhs[i] != rhs[i]) return false;
     return true;
 }
 
-template <class T, class Alloc>
-bool operator!=(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) { return !(lhs == rhs); }
+template <class T>
+bool operator!=(const deque<T>& lhs, const deque<T>& rhs) { return !(lhs == rhs); }
 
-template <class T, class Alloc>
-bool operator<(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) {
-    typename deque<T,Alloc>::size_type n = std::min(lhs.sz_, rhs.sz_);
-    for (typename deque<T,Alloc>::size_type i = 0; i < n; ++i) {
+template <class T>
+bool operator<(const deque<T>& lhs, const deque<T>& rhs) {
+    typename deque<T>::size_type n = std::min(lhs.sz_, rhs.sz_);
+    for (typename deque<T>::size_type i = 0; i < n; ++i) {
         if (lhs[i] < rhs[i]) return true;
         if (rhs[i] < lhs[i]) return false;
     }
     return lhs.sz_ < rhs.sz_;
 }
 
-template <class T, class Alloc>
-bool operator<=(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) { return !(rhs < lhs); }
+template <class T>
+bool operator<=(const deque<T>& lhs, const deque<T>& rhs) { return !(rhs < lhs); }
 
-template <class T, class Alloc>
-bool operator>(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) { return rhs < lhs; }
+template <class T>
+bool operator>(const deque<T>& lhs, const deque<T>& rhs) { return rhs < lhs; }
 
-template <class T, class Alloc>
-bool operator>=(const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs) { return !(lhs < rhs); }
+template <class T>
+bool operator>=(const deque<T>& lhs, const deque<T>& rhs) { return !(lhs < rhs); }
 
-template <class T, class Alloc>
-void swap(deque<T,Alloc>& x, deque<T,Alloc>& y) { x.swap(y); }
+template <class T>
+void swap(deque<T>& x, deque<T>& y) { x.swap(y); }
 
