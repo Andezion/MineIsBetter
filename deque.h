@@ -306,41 +306,60 @@ deque<T>::deque(std::initializer_list<value_type> il, const allocator_type& allo
 
 template<typename T>
 template <class InputIterator>
-void deque<T>::assign(InputIterator first, InputIterator last) {
+void deque<T>::assign(InputIterator first, InputIterator last)
+{
     clear();
-    for (auto it = first; it != last; ++it) push_back(*it);
+    for (auto it = first; it != last; ++it)
+    {
+        push_back(*it);
+    }
 }
 
 template<typename T>
-void deque<T>::assign(size_type n, const T& val) {
+void deque<T>::assign(const size_type n, const T& val)
+{
     clear();
-    for (size_type i = 0; i < n; ++i) push_back(val);
+    for (size_type i = 0; i < n; ++i)
+    {
+        push_back(val);
+    }
 }
 
 template<typename T>
-void deque<T>::assign(std::initializer_list<T> il) {
+void deque<T>::assign(std::initializer_list<T> il)
+{
     assign(il.begin(), il.end());
 }
 
 template<typename T>
-typename deque<T>::reference deque<T>::at(size_type n) {
-    if (n >= sz_) throw std::out_of_range("deque::at");
+typename deque<T>::reference deque<T>::at(size_type n)
+{
+    if (n >= sz_)
+    {
+        throw std::out_of_range("deque::at");
+    }
     return (*this)[n];
 }
 
 template<typename T>
-typename deque<T>::const_reference deque<T>::at(size_type n) const {
-    if (n >= sz_) throw std::out_of_range("deque::at");
+typename deque<T>::const_reference deque<T>::at(size_type n) const
+{
+    if (n >= sz_)
+    {
+        throw std::out_of_range("deque::at");
+    }
     return (*this)[n];
 }
 
 template<typename T>
-typename deque<T>::reference deque<T>::back() {
+typename deque<T>::reference deque<T>::back()
+{
     return (*this)[sz_ - 1];
 }
 
 template<typename T>
-typename deque<T>::const_reference deque<T>::back() const {
+typename deque<T>::const_reference deque<T>::back() const
+{
     return (*this)[sz_ - 1];
 }
 
