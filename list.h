@@ -157,7 +157,6 @@ public:
     ~list() noexcept;
 };
 
-// define conversion constructor now that iterator is defined
 template<typename T>
 list<T>::const_iterator::const_iterator(const iterator& it) noexcept : current(it.current) {}
 
@@ -284,7 +283,7 @@ void list<T>::assign(list &&other) noexcept
     }
     else
     {
-        // assigning to self: nothing to do
+        
     }
 }
 
@@ -945,28 +944,55 @@ void list<T>::splice(const_iterator position, list&& x)
 template<typename T>
 void list<T>::splice(const_iterator position, list& x, const_iterator i)
 {
-    if (!i.current) return;
+    if (!i.current) 
+    {
+        return;
+    }
 
     Node* node = const_cast<Node*>(i.current);
 
-    if (this == &x) {
-        // moving within same list
-        // if inserting before itself or immediately before its next, no-op
-        if (position.current == node || position.current == node->next) return;
-        // unlink node
-        if (node->prev) node->prev->next = node->next; else head = node->next;
-        if (node->next) node->next->prev = node->prev; else tail = node->prev;
-        // now insert below (size unchanged)
-    } else {
-        // unlink from x and adjust size
-        if (node->prev) {
+    if (this == &x) 
+{
+        if (position.current == node || position.current == node->next) 
+        {
+            return;
+        }
+        
+        if (node->prev) 
+        {
+            node->prev->next = node->next; 
+        } 
+        else 
+        {
+            head = node->next;
+        }
+        if (node->next) 
+        {
+            node->next->prev = node->prev; 
+        }
+        else 
+        {
+            tail = node->prev;
+        }
+        
+    } 
+    else 
+    {
+        
+        if (node->prev) 
+        {
             node->prev->next = node->next;
-        } else {
+        } 
+        else 
+        {
             x.head = node->next;
         }
-        if (node->next) {
+        if (node->next) 
+        {
             node->next->prev = node->prev;
-        } else {
+        } 
+        else 
+        {
             x.tail = node->prev;
         }
         --x.size_of_list;
