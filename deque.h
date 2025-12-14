@@ -536,24 +536,44 @@ template <class T>
 bool operator!=(const deque<T>& lhs, const deque<T>& rhs) { return !(lhs == rhs); }
 
 template <class T>
-bool operator<(const deque<T>& lhs, const deque<T>& rhs) {
+bool operator<(const deque<T>& lhs, const deque<T>& rhs)
+{
     typename deque<T>::size_type n = std::min(lhs.sz_, rhs.sz_);
-    for (typename deque<T>::size_type i = 0; i < n; ++i) {
-        if (lhs[i] < rhs[i]) return true;
-        if (rhs[i] < lhs[i]) return false;
+    for (typename deque<T>::size_type i = 0; i < n; ++i)
+    {
+        if (lhs[i] < rhs[i])
+        {
+            return true;
+        }
+        if (rhs[i] < lhs[i])
+        {
+            return false;
+        }
     }
     return lhs.sz_ < rhs.sz_;
 }
 
 template <class T>
-bool operator<=(const deque<T>& lhs, const deque<T>& rhs) { return !(rhs < lhs); }
+bool operator<=(const deque<T>& lhs, const deque<T>& rhs)
+{
+    return !(rhs < lhs);
+}
 
 template <class T>
-bool operator>(const deque<T>& lhs, const deque<T>& rhs) { return rhs < lhs; }
+bool operator>(const deque<T>& lhs, const deque<T>& rhs)
+{
+    return rhs < lhs;
+}
 
 template <class T>
-bool operator>=(const deque<T>& lhs, const deque<T>& rhs) { return !(lhs < rhs); }
+bool operator>=(const deque<T>& lhs, const deque<T>& rhs)
+{
+    return !(lhs < rhs);
+}
 
 template <class T>
-void swap(deque<T>& x, deque<T>& y) { x.swap(y); }
+void swap(deque<T>& x, deque<T>& y) noexcept
+{ 
+    x.swap(y); 
+}
 
