@@ -1002,9 +1002,12 @@ void list<T>::splice(const_iterator position, list& x, const_iterator i)
     {
         node->prev = tail;
         node->next = nullptr;
-        if (tail) {
+        if (tail) 
+        {
             tail->next = node;
-        } else {
+        } 
+        else 
+        {
             head = node;
         }
         tail = node;
@@ -1018,14 +1021,20 @@ void list<T>::splice(const_iterator position, list& x, const_iterator i)
         node->next = pos;
         pos->prev = node;
 
-        if (prev) {
+        if (prev) 
+        {
             prev->next = node;
-        } else {
+        } 
+        else 
+        {
             head = node;
         }
     }
 
-    if (this != &x) ++size_of_list;
+    if (this != &x) 
+    {
+        ++size_of_list;
+    }
 }
 
 template<typename T>
