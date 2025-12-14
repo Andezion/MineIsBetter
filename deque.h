@@ -196,11 +196,14 @@ deque<T>::deque(const allocator_type& alloc)
 
 template<typename T>
 deque<T>::deque(const size_type n)
-    : alloc_(allocator_type()), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    if (n > 0) {
+    : alloc_(allocator_type()), data_(nullptr)
+{
+    if (n > 0)
+    {
         cap_ = n;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-        for (size_type i = 0; i < n; ++i) {
+        for (size_type i = 0; i < n; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, data_ + i);
         }
         sz_ = n;
@@ -208,12 +211,15 @@ deque<T>::deque(const size_type n)
 }
 
 template<typename T>
-deque<T>::deque(size_type n, const value_type& val, const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    if (n > 0) {
+deque<T>::deque(const size_type n, const value_type& val, const allocator_type& alloc)
+    : alloc_(alloc), data_(nullptr)
+{
+    if (n > 0)
+    {
         cap_ = n;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-        for (size_type i = 0; i < n; ++i) {
+        for (size_type i = 0; i < n; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, data_ + i, val);
         }
         sz_ = n;
@@ -223,17 +229,24 @@ deque<T>::deque(size_type n, const value_type& val, const allocator_type& alloc)
 template<typename T>
 template <class InputIterator>
 deque<T>::deque(InputIterator first, InputIterator last, const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    for (auto it = first; it != last; ++it) push_back(*it);
+    : alloc_(alloc), data_(nullptr)
+{
+    for (auto it = first; it != last; ++it)
+    {
+        push_back(*it);
+    }
 }
 
 template<typename T>
 deque<T>::deque(const deque& x)
-    : alloc_(x.alloc_), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    if (x.sz_ > 0) {
+    : alloc_(x.alloc_), data_(nullptr)
+{
+    if (x.sz_ > 0)
+    {
         cap_ = x.sz_;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-        for (size_type i = 0; i < x.sz_; ++i) {
+        for (size_type i = 0; i < x.sz_; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, data_ + i, x[i]);
         }
         sz_ = x.sz_;
@@ -242,11 +255,14 @@ deque<T>::deque(const deque& x)
 
 template<typename T>
 deque<T>::deque(const deque& x, const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    if (x.sz_ > 0) {
+    : alloc_(alloc), data_(nullptr)
+{
+    if (x.sz_ > 0)
+    {
         cap_ = x.sz_;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-        for (size_type i = 0; i < x.sz_; ++i) {
+        for (size_type i = 0; i < x.sz_; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, data_ + i, x[i]);
         }
         sz_ = x.sz_;
@@ -255,25 +271,37 @@ deque<T>::deque(const deque& x, const allocator_type& alloc)
 
 template<typename T>
 deque<T>::deque(deque&& x)
-    : alloc_(std::move(x.alloc_)), data_(x.data_), sz_(x.sz_), cap_(x.cap_), head_(x.head_) {
+    : alloc_(std::move(x.alloc_)), data_(x.data_), sz_(x.sz_), cap_(x.cap_), head_(x.head_)
+{
     x.data_ = nullptr; x.sz_ = x.cap_ = x.head_ = 0;
 }
 
 template<typename T>
 deque<T>::deque(deque&& x, const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    if (alloc_ == x.alloc_) {
+    : alloc_(alloc), data_(nullptr)
+{
+    if (alloc_ == x.alloc_)
+    {
         data_ = x.data_; sz_ = x.sz_; cap_ = x.cap_; head_ = x.head_;
         x.data_ = nullptr; x.sz_ = x.cap_ = x.head_ = 0;
-    } else {
-        for (size_type i = 0; i < x.sz_; ++i) push_back(x[i]);
+    }
+    else
+    {
+        for (size_type i = 0; i < x.sz_; ++i)
+        {
+            push_back(x[i]);
+        }
     }
 }
 
 template<typename T>
 deque<T>::deque(std::initializer_list<value_type> il, const allocator_type& alloc)
-    : alloc_(alloc), data_(nullptr), sz_(0), cap_(0), head_(0) {
-    for (const auto& v : il) push_back(v);
+    : alloc_(alloc), data_(nullptr)
+{
+    for (const auto& v : il)
+    {
+        push_back(v);
+    }
 }
 
 template<typename T>
