@@ -364,21 +364,35 @@ typename deque<T>::const_reference deque<T>::back() const
 }
 
 template<typename T>
-typename deque<T>::iterator deque<T>::begin() noexcept { return iterator(this, 0); }
+typename deque<T>::iterator deque<T>::begin() noexcept
+{
+    return iterator(this, 0);
+}
 
 template<typename T>
-typename deque<T>::const_iterator deque<T>::begin() const noexcept { return const_iterator(const_cast<deque*>(this), 0); }
+typename deque<T>::const_iterator deque<T>::begin() const noexcept
+{
+    return const_iterator(const_cast<deque*>(this), 0);
+}
 
 template<typename T>
-typename deque<T>::const_iterator deque<T>::cbegin() const noexcept { return begin(); }
+typename deque<T>::const_iterator deque<T>::cbegin() const noexcept
+{
+    return begin();
+}
 
 template<typename T>
-typename deque<T>::const_iterator deque<T>::cend() const noexcept { return end(); }
+typename deque<T>::const_iterator deque<T>::cend() const noexcept
+{
+    return end();
+}
 
 template<typename T>
-void deque<T>::clear() noexcept {
+void deque<T>::clear() noexcept
+{
     if (data_) {
-        for (size_type i = 0; i < sz_; ++i) {
+        for (size_type i = 0; i < sz_; ++i)
+        {
             size_type p = idx(i);
             std::allocator_traits<allocator_type>::destroy(alloc_, data_ + p);
         }
@@ -387,99 +401,153 @@ void deque<T>::clear() noexcept {
 }
 
 template<typename T>
-typename deque<T>::const_reverse_iterator deque<T>::crbegin() const noexcept { return const_reverse_iterator(end()); }
+typename deque<T>::const_reverse_iterator deque<T>::crbegin() const noexcept
+{
+    return const_reverse_iterator(end());
+}
 
 template<typename T>
-typename deque<T>::const_reverse_iterator deque<T>::crend() const noexcept { return const_reverse_iterator(begin()); }
+typename deque<T>::const_reverse_iterator deque<T>::crend() const noexcept
+{
+    return const_reverse_iterator(begin());
+}
 
 template<typename T>
 template <class... Args>
-typename deque<T>::iterator deque<T>::emplace(const_iterator position, Args&&... args) {
-    size_type pos = static_cast<size_type>(position.pos_);
+typename deque<T>::iterator deque<T>::emplace(const_iterator position, Args&&... args)
+{
+    auto pos = static_cast<size_type>(position.pos_);
     insert(iterator(const_cast<deque*>(position.d_), pos), 1, value_type(std::forward<Args>(args)...));
     return iterator(this, pos);
 }
 
 template<typename T>
 template <class... Args>
-void deque<T>::emplace_back(Args&&... args) {
+void deque<T>::emplace_back(Args&&... args)
+{
     push_back(value_type(std::forward<Args>(args)...));
 }
 
 template<typename T>
 template <class... Args>
-void deque<T>::emplace_front(Args&&... args) {
+void deque<T>::emplace_front(Args&&... args)
+{
     push_front(value_type(std::forward<Args>(args)...));
 }
 
 template<typename T>
-bool deque<T>::empty() const noexcept { return sz_ == 0; }
+bool deque<T>::empty() const noexcept
+{
+    return sz_ == 0;
+}
 
 template<typename T>
-typename deque<T>::iterator deque<T>::end() noexcept { return iterator(this, sz_); }
+typename deque<T>::iterator deque<T>::end() noexcept
+{
+    return iterator(this, sz_);
+}
 
 template<typename T>
-typename deque<T>::const_iterator deque<T>::end() const noexcept { return const_iterator(const_cast<deque*>(this), sz_); }
+typename deque<T>::const_iterator deque<T>::end() const noexcept
+{
+    return const_iterator(const_cast<deque*>(this), sz_);
+}
 
 template<typename T>
-typename deque<T>::iterator deque<T>::erase(const_iterator position) {
+typename deque<T>::iterator deque<T>::erase(const_iterator position)
+{
     return erase(position, const_iterator(position.d_, position.pos_ + 1));
 }
 
 template<typename T>
-typename deque<T>::iterator deque<T>::erase(const_iterator first, const_iterator last) {
-    size_type f = static_cast<size_type>(first.pos_);
-    size_type l = static_cast<size_type>(last.pos_);
-    if (f >= l) return iterator(this, f);
-    for (size_type i = l; i < sz_; ++i) {
+typename deque<T>::iterator deque<T>::erase(const_iterator first, const_iterator last)
+{
+    auto f = static_cast<size_type>(first.pos_);
+    const auto l = static_cast<size_type>(last.pos_);
+
+    if (f >= l)
+    {
+        return iterator(this, f);
+    }
+    for (size_type i = l; i < sz_; ++i)
+    {
         (*this)[i - (l - f)] = std::move((*this)[i]);
     }
-    size_type removed = l - f;
-    for (size_type i = 0; i < removed; ++i) pop_back();
+
+    const size_type removed = l - f;
+    for (size_type i = 0; i < removed; ++i)
+    {
+        pop_back();
+    }
     return iterator(this, f);
 }
 
 template<typename T>
-typename deque<T>::reference deque<T>::front() { return (*this)[0]; }
+typename deque<T>::reference deque<T>::front()
+{
+    return (*this)[0];
+}
 
 template<typename T>
-typename deque<T>::const_reference deque<T>::front() const { return (*this)[0]; }
+typename deque<T>::const_reference deque<T>::front() const
+{
+    return (*this)[0];
+}
 
 template<typename T>
-typename deque<T>::allocator_type deque<T>::get_allocator() const { return alloc_; }
+typename deque<T>::allocator_type deque<T>::get_allocator() const
+{
+    return alloc_;
+}
 
 template<typename T>
-typename deque<T>::iterator deque<T>::insert(iterator position, const T& val) {
-    size_type pos = static_cast<size_type>(position.pos_);
+typename deque<T>::iterator deque<T>::insert(iterator position, const T& val)
+{
+    auto pos = static_cast<size_type>(position.pos_);
     insert(position, 1, val);
     return iterator(this, pos);
 }
 
 template<typename T>
-void deque<T>::insert(iterator position, size_type n, const T& val) {
-    size_type pos = static_cast<size_type>(position.pos_);
-    if (n == 0) return;
-    size_type need = sz_ + n;
-    if (need > cap_) {
+void deque<T>::insert(iterator position, size_type n, const T& val)
+{
+    auto pos = static_cast<size_type>(position.pos_);
+    if (n == 0)
+    {
+        return;
+    }
+    if (const size_type need = sz_ + n; need > cap_)
+    {
         size_type newcap = std::max<size_type>(cap_ ? cap_ * 2 : 1, need);
         T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, newcap);
-        for (size_type i = 0; i < pos; ++i) {
+        for (size_type i = 0; i < pos; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + i, std::move((*this)[i]));
         }
-        for (size_type i = 0; i < n; ++i) {
+        for (size_type i = 0; i < n; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + pos + i, val);
         }
-        for (size_type i = pos; i < sz_; ++i) {
+        for (size_type i = pos; i < sz_; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + n + i, std::move((*this)[i]));
         }
+
         clear();
-        if (data_) std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
-        data_ = newdata; cap_ = newcap; head_ = 0; sz_ = need;
-    } else {
-        for (size_type i = sz_; i > pos; --i) {
-            (*this)[i] = std::move((*this)[i-1]);
+        if (data_)
+        {
+            std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
         }
-        for (size_type i = 0; i < n; ++i) {
+        data_ = newdata; cap_ = newcap; head_ = 0; sz_ = need;
+    }
+    else
+    {
+        for (size_type i = sz_; i > pos; --i)
+        {
+            (*this)[i] = std::move((*this)[i - 1]);
+        }
+        for (size_type i = 0; i < n; ++i)
+        {
             (*this)[pos + i] = val;
         }
         sz_ += n;
@@ -488,9 +556,11 @@ void deque<T>::insert(iterator position, size_type n, const T& val) {
 
 template<typename T>
 template <class InputIterator>
-void deque<T>::insert(iterator position, InputIterator first, InputIterator last) {
-    size_type pos = static_cast<size_type>(position.pos_);
-    for (auto it = first; it != last; ++it) {
+void deque<T>::insert(iterator position, InputIterator first, InputIterator last)
+{
+    auto pos = static_cast<size_type>(position.pos_);
+    for (auto it = first; it != last; ++it)
+    {
         insert(iterator(this, pos++), *it);
     }
 }
