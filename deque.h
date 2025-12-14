@@ -27,8 +27,8 @@ private:
     size_type cap_ = 0;
     size_type head_ = 0;
 
-    size_type idx(size_type pos) const noexcept { return (head_ + pos) % cap_; }
-    void destroy_range(size_type from, size_type to) noexcept {
+    [[nodiscard]] size_type idx(const size_type pos) const noexcept { return (head_ + pos) % cap_; }
+    void destroy_range(const size_type from, const size_type to) noexcept {
         if (!data_) return;
         for (size_type i = from; i != to; i = (i + 1) % cap_) {
             std::allocator_traits<allocator_type>::destroy(alloc_, data_ + i);
@@ -36,12 +36,12 @@ private:
     }
 
 public:
-    class iterator {
+    class iterator
+    {
     public:
         deque* d_ = nullptr;
         size_type pos_ = 0;
-    
-    public:
+
         using iterator_category = std::random_access_iterator_tag;
         using value_type = T;
         using difference_type = std::ptrdiff_t;
@@ -79,7 +79,7 @@ public:
     template <class InputIterator> deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type());
     deque (const deque& x);
     deque (const deque& x, const allocator_type& alloc);
-    deque (deque&& x); deque (deque&& x, const allocator_type& alloc);
+    deque (deque&& x) noexcept ; deque (deque&& x, const allocator_type& alloc);
     deque (std::initializer_list<value_type> il, const allocator_type& alloc = allocator_type());
 
     template <class InputIterator>  void assign (InputIterator first, InputIterator last);
@@ -110,7 +110,8 @@ public:
     iterator insert (iterator position, const T& val);
     void insert (iterator position, size_type n, const T& val);
     template <class InputIterator> void insert (iterator position, InputIterator first, InputIterator last);
-    size_type max_size() const;
+
+    static size_type max_size();
     reference operator[] (size_type n);
     const_reference operator[] (size_type n) const;
     deque& operator= (const deque& x);
@@ -396,57 +397,78 @@ void deque<T>::insert(iterator position, InputIterator first, InputIterator last
 }
 
 template<typename T>
-typename deque<T>::size_type deque<T>::max_size() const {
+typename deque<T>::size_type deque<T>::max_size()
+{
     return std::numeric_limits<size_type>::max() / sizeof(T);
 }
 
 template<typename T>
-typename deque<T>::reference deque<T>::operator[](size_type n) {
+typename deque<T>::reference deque<T>::operator[](const size_type n)
+{
     size_type p = idx(n);
     return data_[p];
 }
 
 template<typename T>
-typename deque<T>::const_reference deque<T>::operator[](size_type n) const {
+typename deque<T>::const_reference deque<T>::operator[](const size_type n) const
+{
     size_type p = idx(n);
     return data_[p];
 }
 
 template<typename T>
-deque<T>& deque<T>::operator=(const deque& x) {
-    if (this != &x) {
+deque<T>& deque<T>::operator=(const deque& x)
+{
+    if (this != &x)
+    {
         clear();
         alloc_ = x.alloc_;
-        for (size_type i = 0; i < x.sz_; ++i) push_back(x[i]);
+        for (size_type i = 0; i < x.sz_; ++i)
+        {
+            push_back(x[i]);
+        }
     }
     return *this;
 }
 
 template<typename T>
-void deque<T>::pop_back() {
-    if (sz_ == 0) return;
+void deque<T>::pop_back()
+{
+    if (sz_ == 0)
+    {
+        return;
+    }
     size_type p = idx(sz_ - 1);
     std::allocator_traits<allocator_type>::destroy(alloc_, data_ + p);
     --sz_;
 }
 
 template<typename T>
-void deque<T>::pop_front() {
-    if (sz_ == 0) return;
+void deque<T>::pop_front()
+{
+    if (sz_ == 0)
+    {
+        return;
+    }
     std::allocator_traits<allocator_type>::destroy(alloc_, data_ + head_);
     head_ = (head_ + 1) % cap_;
     --sz_;
 }
 
 template<typename T>
-void deque<T>::push_back(const T& val) {
-    if (cap_ == 0) {
+void deque<T>::push_back(const T& val)
+{
+    if (cap_ == 0)
+    {
         cap_ = 1;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-    } else if (sz_ + 1 > cap_) {
+    }
+    else if (sz_ + 1 > cap_)
+    {
         size_type newcap = cap_ * 2;
         T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, newcap);
-        for (size_type i = 0; i < sz_; ++i) {
+        for (size_type i = 0; i < sz_; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + i, std::move((*this)[i]));
         }
         clear();
@@ -459,17 +481,23 @@ void deque<T>::push_back(const T& val) {
 }
 
 template<typename T>
-void deque<T>::push_front(const T& val) {
-    if (cap_ == 0) {
+void deque<T>::push_front(const T& val)
+{
+    if (cap_ == 0)
+    {
         cap_ = 1;
         data_ = std::allocator_traits<allocator_type>::allocate(alloc_, cap_);
-    } else if (sz_ + 1 > cap_) {
+    }
+    else if (sz_ + 1 > cap_)
+    {
         size_type newcap = cap_ * 2;
         T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, newcap);
     
-        for (size_type i = 0; i < sz_; ++i) {
+        for (size_type i = 0; i < sz_; ++i)
+        {
             std::allocator_traits<allocator_type>::construct(alloc_, newdata + i + 1, std::move((*this)[i]));
         }
+
         clear();
         std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
         data_ = newdata; cap_ = newcap; head_ = 0;
@@ -492,31 +520,51 @@ template<typename T>
 typename deque<T>::const_reverse_iterator deque<T>::rend() const { return const_reverse_iterator(begin()); }
 
 template<typename T>
-void deque<T>::resize(size_type n, T val) {
+void deque<T>::resize(const size_type n, T val)
+{
     while (sz_ > n) pop_back();
     while (sz_ < n) push_back(val);
 }
 
 template<typename T>
-void deque<T>::shrink_to_fit() {
-    if (sz_ == cap_) return;
-    if (sz_ == 0) {
-        if (data_) std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
-        data_ = nullptr; cap_ = 0; head_ = 0;
+void deque<T>::shrink_to_fit()
+{
+    if (sz_ == cap_)
+    {
         return;
     }
+    if (sz_ == 0)
+    {
+        if (data_)
+        {
+            std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
+        }
+        data_ = nullptr;
+        cap_ = 0;
+        head_ = 0;
+        return;
+    }
+
     T* newdata = std::allocator_traits<allocator_type>::allocate(alloc_, sz_);
-    for (size_type i = 0; i < sz_; ++i) std::allocator_traits<allocator_type>::construct(alloc_, newdata + i, std::move((*this)[i]));
+    for (size_type i = 0; i < sz_; ++i)
+    {
+        std::allocator_traits<allocator_type>::construct(alloc_, newdata + i, std::move((*this)[i]));
+    }
+
     clear();
     std::allocator_traits<allocator_type>::deallocate(alloc_, data_, cap_);
     data_ = newdata; cap_ = sz_; head_ = 0;
 }
 
 template<typename T>
-typename deque<T>::size_type deque<T>::size() const { return sz_; }
+typename deque<T>::size_type deque<T>::size() const
+{
+    return sz_;
+}
 
 template<typename T>
-void deque<T>::swap(deque& x) {
+void deque<T>::swap(deque& x)
+{
     using std::swap;
     swap(alloc_, x.alloc_);
     swap(data_, x.data_);
@@ -526,9 +574,22 @@ void deque<T>::swap(deque& x) {
 }
 
 template <class T>
-bool operator==(const deque<T>& lhs, const deque<T>& rhs) {
-    if (lhs.sz_ != rhs.sz_) return false;
-    for (typename deque<T>::size_type i = 0; i < lhs.sz_; ++i) if (lhs[i] != rhs[i]) return false;
+bool operator==(const deque<T>& lhs, const deque<T>& rhs)
+{
+    if (lhs.sz_ != rhs.sz_)
+    {
+        return false;
+    }
+    for (typename deque<T>::size_type i = 0; i < lhs.sz_; ++i)
+    {
+        if (lhs != nullptr && rhs != nullptr)
+        {
+            if (lhs[i] != rhs[i])
+            {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
