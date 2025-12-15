@@ -141,7 +141,10 @@ template<typename T>
 template<typename... Args>
 void stack<T>::emplace(Args&&... args)
 {
-    if (size_ == capacity_) grow();
+    if (size_ == capacity_)
+    {
+        grow();
+    }
     alloc_.construct(data_ + size_, std::forward<Args>(args)...);
     ++size_;
 }
@@ -149,7 +152,10 @@ void stack<T>::emplace(Args&&... args)
 template<typename T>
 void stack<T>::pop()
 {
-    if (size_ == 0) return;
+    if (size_ == 0)
+    {
+        return;
+    }
     --size_;
     alloc_.destroy(data_ + size_);
 }
@@ -157,27 +163,42 @@ void stack<T>::pop()
 template<typename T>
 T& stack<T>::top()
 {
-    if (empty()) throw std::runtime_error("Stack is empty");
+    if (empty())
+    {
+        throw std::runtime_error("Stack is empty");
+    }
     return data_[size_ - 1];
 }
 
 template<typename T>
 const T& stack<T>::top() const
 {
-    if (empty()) throw std::runtime_error("Stack is empty");
+    if (empty())
+    {
+        throw std::runtime_error("Stack is empty");
+    }
     return data_[size_ - 1];
 }
 
 template<typename T>
-bool stack<T>::empty() const noexcept { return size_ == 0; }
+bool stack<T>::empty() const noexcept
+{
+    return size_ == 0;
+}
 
 template<typename T>
-size_t stack<T>::size() const noexcept { return size_; }
+size_t stack<T>::size() const noexcept
+{
+    return size_;
+}
 
 template<typename T>
 void stack<T>::clear() noexcept
 {
-    for (size_t i = 0; i < size_; ++i) alloc_.destroy(data_ + i);
+    for (size_t i = 0; i < size_; ++i)
+    {
+        alloc_.destroy(data_ + i);
+    }
     size_ = 0;
 }
 
@@ -187,21 +208,40 @@ void stack<T>::reserve(size_t new_cap)
     if (new_cap <= capacity_) return;
     T* new_data = alloc_.allocate(new_cap);
     size_t i = 0;
-    try {
-        for (; i < size_; ++i) alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
-    } catch (...) {
-        for (size_t j = 0; j < i; ++j) alloc_.destroy(new_data + j);
+    try
+    {
+        for (; i < size_; ++i)
+        {
+            alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
+        }
+    }
+    catch (...)
+    {
+        for (size_t j = 0; j < size_; ++j)
+        {
+            alloc_.destroy(new_data + j);
+        }
         alloc_.deallocate(new_data, new_cap);
         throw;
     }
-    for (size_t j = 0; j < size_; ++j) alloc_.destroy(data_ + j);
-    if (data_) alloc_.deallocate(data_, capacity_);
+
+    for (size_t j = 0; j < size_; ++j)
+    {
+        alloc_.destroy(data_ + j);
+    }
+    if (data_)
+    {
+        alloc_.deallocate(data_, capacity_);
+    }
     data_ = new_data;
     capacity_ = new_cap;
 }
 
 template<typename T>
-size_t stack<T>::capacity() const noexcept { return capacity_; }
+size_t stack<T>::capacity() const noexcept
+{
+    return capacity_;
+}
 
 template<typename T>
 void stack<T>::shrink_to_fit()
@@ -213,7 +253,7 @@ void stack<T>::shrink_to_fit()
     try {
         for (; i < size_; ++i) alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
     } catch (...) {
-        for (size_t j = 0; j < i; ++j) alloc_.destroy(new_data + j);
+        for (size_t j = 0; j < size_; ++j) alloc_.destroy(new_data + j);
         alloc_.deallocate(new_data, size_);
         throw;
     }
