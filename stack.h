@@ -16,12 +16,12 @@ class stack
 
 public:
     stack() noexcept;
-    stack(const stack<T>& other);
-    stack(stack<T>&& other) noexcept;
+    stack(const stack& other);
+    stack(stack&& other) noexcept;
     ~stack() noexcept;
 
-    stack<T>& operator=(const stack<T>& other);
-    stack<T>& operator=(stack<T>&& other) noexcept;
+    stack& operator=(const stack& other);
+    stack& operator=(stack&& other) noexcept;
 
     void push(const T& value);
     void push(T&& value);
@@ -32,12 +32,12 @@ public:
     T& top();
     const T& top() const;
 
-    bool empty() const noexcept;
-    size_t size() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
+    [[nodiscard]] size_t size() const noexcept;
 
     void clear() noexcept;
     void reserve(size_t new_cap);
-    size_t capacity() const noexcept;
+    [[nodiscard]] size_t capacity() const noexcept;
     void shrink_to_fit();
 
     using iterator = T*;
@@ -65,13 +65,20 @@ stack<T>::stack(const stack& other) : data_(nullptr), size_(0), capacity_(0)
     capacity_ = other.capacity_;
     size_t i = 0;
     try
-        {
+    {
         for (; i < other.size_; ++i)
+        {
             alloc_.construct(data_ + i, other.data_[i]);
+        }
         size_ = other.size_;
     }
-    catch (...) {
-        for (size_t j = 0; j < i; ++j) alloc_.destroy(data_ + j);
+    catch (...)
+    {
+        for (size_t j = 0; j < size_; ++j)
+        {
+            alloc_.destroy(data_ + j);
+        }
+
         alloc_.deallocate(data_, capacity_);
         data_ = nullptr; capacity_ = 0; size_ = 0;
         throw;
@@ -246,14 +253,31 @@ size_t stack<T>::capacity() const noexcept
 template<typename T>
 void stack<T>::shrink_to_fit()
 {
-    if (capacity_ == size_) return;
-    if (size_ == 0) { clear_and_deallocate(); return; }
+    if (capacity_ == size_)
+    {
+        return;
+    }
+    if (size_ == 0)
+    {
+        clear_and_deallocate();
+        return;
+    }
+
     T* new_data = alloc_.allocate(size_);
     size_t i = 0;
-    try {
-        for (; i < size_; ++i) alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
-    } catch (...) {
-        for (size_t j = 0; j < size_; ++j) alloc_.destroy(new_data + j);
+    try
+    {
+        for (; i < size_; ++i)
+        {
+            alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
+        }
+    }
+    catch (...)
+    {
+        for (size_t j = 0; j < size_; ++j)
+        {
+            alloc_.destroy(new_data + j);
+        }
         alloc_.deallocate(new_data, size_);
         throw;
     }
@@ -305,19 +329,35 @@ void stack<T>::swap(stack<T>& other) noexcept
 template<typename T>
 void stack<T>::grow()
 {
-    const size_t new_capacity = (capacity_ == 0) ? 1 : capacity_ * 2;
+    const size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
     T* new_data = alloc_.allocate(new_capacity);
     size_t i = 0;
-    try {
+    try
+    {
         for (; i < size_; ++i)
+        {
             alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
-    } catch (...) {
-        for (size_t j = 0; j < size_; ++j) alloc_.destroy(new_data + j);
+        }
+    }
+    catch (...)
+    {
+        for (size_t j = 0; j < size_; ++j)
+        {
+            alloc_.destroy(new_data + j);
+        }
         alloc_.deallocate(new_data, new_capacity);
         throw;
     }
-    for (size_t j = 0; j < size_; ++j) alloc_.destroy(data_ + j);
-    if (data_) alloc_.deallocate(data_, capacity_);
+
+    for (size_t j = 0; j < size_; ++j)
+    {
+        alloc_.destroy(data_ + j);
+    }
+    if (data_)
+    {
+        alloc_.deallocate(data_, capacity_);
+    }
+
     data_ = new_data;
     capacity_ = new_capacity;
 }
@@ -325,8 +365,16 @@ void stack<T>::grow()
 template<typename T>
 void stack<T>::clear_and_deallocate() noexcept
 {
-    if (!data_) return;
-    for (size_t i = 0; i < size_; ++i) alloc_.destroy(data_ + i);
+    if (!data_)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < size_; ++i)
+    {
+        alloc_.destroy(data_ + i);
+    }
+
     alloc_.deallocate(data_, capacity_);
     data_ = nullptr;
     size_ = 0;
@@ -334,7 +382,10 @@ void stack<T>::clear_and_deallocate() noexcept
 }
 
 template<typename T>
-void swap(stack<T>& a, stack<T>& b) noexcept { a.swap(b); }
+void swap(stack<T>& a, stack<T>& b) noexcept
+{
+    a.swap(b);
+}
 
 template<typename T>
 bool operator==(const stack<T>& a, const stack<T>& b)
