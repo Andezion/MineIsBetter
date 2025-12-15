@@ -257,23 +257,42 @@ void stack<T>::shrink_to_fit()
         alloc_.deallocate(new_data, size_);
         throw;
     }
-    for (size_t j = 0; j < size_; ++j) alloc_.destroy(data_ + j);
-    if (data_) alloc_.deallocate(data_, capacity_);
+    for (size_t j = 0; j < size_; ++j)
+    {
+        alloc_.destroy(data_ + j);
+    }
+    if (data_)
+    {
+        alloc_.deallocate(data_, capacity_);
+    }
+
     data_ = new_data;
     capacity_ = size_;
 }
 
 template<typename T>
-typename stack<T>::iterator stack<T>::begin() noexcept { return data_; }
+typename stack<T>::iterator stack<T>::begin() noexcept
+{
+    return data_;
+}
 
 template<typename T>
-typename stack<T>::iterator stack<T>::end() noexcept { return data_ ? data_ + size_ : nullptr; }
+typename stack<T>::iterator stack<T>::end() noexcept
+{
+    return data_ ? data_ + size_ : nullptr;
+}
 
 template<typename T>
-typename stack<T>::const_iterator stack<T>::begin() const noexcept { return data_; }
+typename stack<T>::const_iterator stack<T>::begin() const noexcept
+{
+    return data_;
+}
 
 template<typename T>
-typename stack<T>::const_iterator stack<T>::end() const noexcept { return data_ ? data_ + size_ : nullptr; }
+typename stack<T>::const_iterator stack<T>::end() const noexcept
+{
+    return data_ ? data_ + size_ : nullptr;
+}
 
 template<typename T>
 void stack<T>::swap(stack<T>& other) noexcept
@@ -293,7 +312,7 @@ void stack<T>::grow()
         for (; i < size_; ++i)
             alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
     } catch (...) {
-        for (size_t j = 0; j < i; ++j) alloc_.destroy(new_data + j);
+        for (size_t j = 0; j < size_; ++j) alloc_.destroy(new_data + j);
         alloc_.deallocate(new_data, new_capacity);
         throw;
     }
@@ -320,12 +339,18 @@ void swap(stack<T>& a, stack<T>& b) noexcept { a.swap(b); }
 template<typename T>
 bool operator==(const stack<T>& a, const stack<T>& b)
 {
-    if (a.size() != b.size()) return false;
+    if (a.size() != b.size())
+    {
+        return false;
+    }
     return std::equal(a.begin(), a.end(), b.begin());
 }
 
 template<typename T>
-bool operator!=(const stack<T>& a, const stack<T>& b) { return !(a == b); }
+bool operator!=(const stack<T>& a, const stack<T>& b)
+{
+    return !(a == b);
+}
 
 template<typename T>
 bool operator<(const stack<T>& a, const stack<T>& b)
@@ -334,12 +359,21 @@ bool operator<(const stack<T>& a, const stack<T>& b)
 }
 
 template<typename T>
-bool operator<=(const stack<T>& a, const stack<T>& b) { return !(b < a); }
+bool operator<=(const stack<T>& a, const stack<T>& b)
+{
+    return !(b < a);
+}
 
 template<typename T>
-bool operator>(const stack<T>& a, const stack<T>& b) { return b < a; }
+bool operator>(const stack<T>& a, const stack<T>& b)
+{
+    return b < a;
+}
 
 template<typename T>
-bool operator>=(const stack<T>& a, const stack<T>& b) { return !(a < b); }
+bool operator>=(const stack<T>& a, const stack<T>& b)
+{
+    return !(a < b);
+}
 
 
