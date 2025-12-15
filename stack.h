@@ -58,17 +58,19 @@ template<typename T>
 stack<T>::stack() noexcept : data_(nullptr), size_(0), capacity_(0) {}
 
 template<typename T>
-stack<T>::stack(const stack<T>& other) : data_(nullptr), size_(0), capacity_(0)
+stack<T>::stack(const stack& other) : data_(nullptr), size_(0), capacity_(0)
 {
     if (other.size_ == 0) return;
     data_ = alloc_.allocate(other.capacity_);
     capacity_ = other.capacity_;
     size_t i = 0;
-    try {
+    try
+        {
         for (; i < other.size_; ++i)
             alloc_.construct(data_ + i, other.data_[i]);
         size_ = other.size_;
-    } catch (...) {
+    }
+    catch (...) {
         for (size_t j = 0; j < i; ++j) alloc_.destroy(data_ + j);
         alloc_.deallocate(data_, capacity_);
         data_ = nullptr; capacity_ = 0; size_ = 0;
@@ -77,7 +79,7 @@ stack<T>::stack(const stack<T>& other) : data_(nullptr), size_(0), capacity_(0)
 }
 
 template<typename T>
-stack<T>::stack(stack<T>&& other) noexcept : data_(other.data_), size_(other.size_), capacity_(other.capacity_)
+stack<T>::stack(stack&& other) noexcept : data_(other.data_), size_(other.size_), capacity_(other.capacity_)
 {
     other.data_ = nullptr;
     other.size_ = 0;
@@ -91,25 +93,35 @@ stack<T>::~stack() noexcept
 }
 
 template<typename T>
-stack<T>& stack<T>::operator=(const stack<T>& other)
+stack<T>& stack<T>::operator=(const stack& other)
 {
-    if (this == &other) return *this;
-    stack<T> tmp(other);
+    if (this == &other)
+    {
+        return *this;
+    }
+    stack tmp(other);
     swap(tmp);
     return *this;
 }
 
 template<typename T>
-stack<T>& stack<T>::operator=(stack<T>&& other) noexcept
+stack<T>& stack<T>::operator=(stack&& other) noexcept
 {
-    if (this == &other) return *this;
+    if (this == &other)
+    {
+        return *this;
+    }
+
     clear_and_deallocate();
+
     data_ = other.data_;
     size_ = other.size_;
     capacity_ = other.capacity_;
+
     other.data_ = nullptr;
     other.size_ = 0;
     other.capacity_ = 0;
+
     return *this;
 }
 
