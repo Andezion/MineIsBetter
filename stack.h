@@ -35,6 +35,18 @@ public:
     bool empty() const noexcept;
     size_t size() const noexcept;
 
+    void clear() noexcept;
+    void reserve(size_t new_cap);
+    size_t capacity() const noexcept;
+    void shrink_to_fit();
+
+    using iterator = T*;
+    using const_iterator = const T*;
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator end() const noexcept;
+
     void swap(stack<T>& other) noexcept;
 
 private:
@@ -151,6 +163,67 @@ template<typename T>
 size_t stack<T>::size() const noexcept { return size_; }
 
 template<typename T>
+void stack<T>::clear() noexcept
+{
+    for (size_t i = 0; i < size_; ++i) alloc_.destroy(data_ + i);
+    size_ = 0;
+}
+
+template<typename T>
+void stack<T>::reserve(size_t new_cap)
+{
+    if (new_cap <= capacity_) return;
+    T* new_data = alloc_.allocate(new_cap);
+    size_t i = 0;
+    try {
+        for (; i < size_; ++i) alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
+    } catch (...) {
+        for (size_t j = 0; j < i; ++j) alloc_.destroy(new_data + j);
+        alloc_.deallocate(new_data, new_cap);
+        throw;
+    }
+    for (size_t j = 0; j < size_; ++j) alloc_.destroy(data_ + j);
+    if (data_) alloc_.deallocate(data_, capacity_);
+    data_ = new_data;
+    capacity_ = new_cap;
+}
+
+template<typename T>
+size_t stack<T>::capacity() const noexcept { return capacity_; }
+
+template<typename T>
+void stack<T>::shrink_to_fit()
+{
+    if (capacity_ == size_) return;
+    if (size_ == 0) { clear_and_deallocate(); return; }
+    T* new_data = alloc_.allocate(size_);
+    size_t i = 0;
+    try {
+        for (; i < size_; ++i) alloc_.construct(new_data + i, std::move_if_noexcept(data_[i]));
+    } catch (...) {
+        for (size_t j = 0; j < i; ++j) alloc_.destroy(new_data + j);
+        alloc_.deallocate(new_data, size_);
+        throw;
+    }
+    for (size_t j = 0; j < size_; ++j) alloc_.destroy(data_ + j);
+    if (data_) alloc_.deallocate(data_, capacity_);
+    data_ = new_data;
+    capacity_ = size_;
+}
+
+template<typename T>
+typename stack<T>::iterator stack<T>::begin() noexcept { return data_; }
+
+template<typename T>
+typename stack<T>::iterator stack<T>::end() noexcept { return data_ ? data_ + size_ : nullptr; }
+
+template<typename T>
+typename stack<T>::const_iterator stack<T>::begin() const noexcept { return data_; }
+
+template<typename T>
+typename stack<T>::const_iterator stack<T>::end() const noexcept { return data_ ? data_ + size_ : nullptr; }
+
+template<typename T>
 void stack<T>::swap(stack<T>& other) noexcept
 {
     std::swap(data_, other.data_);
@@ -188,5 +261,33 @@ void stack<T>::clear_and_deallocate() noexcept
     size_ = 0;
     capacity_ = 0;
 }
+
+template<typename T>
+void swap(stack<T>& a, stack<T>& b) noexcept { a.swap(b); }
+
+template<typename T>
+bool operator==(const stack<T>& a, const stack<T>& b)
+{
+    if (a.size() != b.size()) return false;
+    return std::equal(a.begin(), a.end(), b.begin());
+}
+
+template<typename T>
+bool operator!=(const stack<T>& a, const stack<T>& b) { return !(a == b); }
+
+template<typename T>
+bool operator<(const stack<T>& a, const stack<T>& b)
+{
+    return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+}
+
+template<typename T>
+bool operator<=(const stack<T>& a, const stack<T>& b) { return !(b < a); }
+
+template<typename T>
+bool operator>(const stack<T>& a, const stack<T>& b) { return b < a; }
+
+template<typename T>
+bool operator>=(const stack<T>& a, const stack<T>& b) { return !(a < b); }
 
 
