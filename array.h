@@ -346,8 +346,14 @@ constexpr bool operator<(const array<T, N> &lhs, const array<T, N> &rhs)
 {
     for (std::size_t i = 0; i < N; i++)
     {
-        if (lhs[i] < rhs[i]) return true;
-        if (rhs[i] < lhs[i]) return false;
+        if (lhs[i] < rhs[i]) 
+        {
+            return true;
+        }
+        if (rhs[i] < lhs[i]) 
+        {
+            return false;
+        }
     }
     return false;
 }
