@@ -321,7 +321,10 @@ constexpr bool operator==(const array<T, N> &lhs, const array<T, N> &rhs)
 {
     for (std::size_t i = 0; i < lhs.size(); i++)
     {
-        if (lhs[i] != rhs[i]) return false;
+        if (lhs[i] != rhs[i]) 
+        {
+            return false;
+        }
     }
     return true;
 }
