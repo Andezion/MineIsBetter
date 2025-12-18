@@ -114,3 +114,18 @@ template<class U, class C> bool operator>(const queue<U,C>& lhs, const queue<U,C
 { 
     return rhs < lhs; 
 }
+
+template<class U, class C> bool operator<=(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return (rhs <= lhs); 
+}
+
+template<class U, class C> bool operator>=(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return (lhs <= rhs); 
+}
+
+template<class U, class C> bool operator<(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return lhs.c_ < rhs.c_; 
+}
