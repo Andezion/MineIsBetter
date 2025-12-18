@@ -95,4 +95,22 @@ public:
 };
 
 template <class T, class Container>
-void swap(queue<T,Container>& x, queue<T,Container>& y) noexcept(noexcept(x.swap(y))) { x.swap(y); }
+void swap(queue<T,Container>& x, queue<T,Container>& y) noexcept(noexcept(x.swap(y))) 
+{ 
+    x.swap(y); 
+}
+
+template<class U, class C> bool operator==(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return lhs.c_ == rhs.c_; 
+}
+
+template<class U, class C> bool operator!=(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return !(lhs == rhs); 
+}
+
+template<class U, class C> bool operator>(const queue<U,C>& lhs, const queue<U,C>& rhs) 
+{ 
+    return rhs < lhs; 
+}
