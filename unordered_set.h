@@ -11,16 +11,28 @@ public:
 
     void insert(const T& v) 
     {
-        if (contains(v)) return;
-        if (size_ + 1 > buckets_.size()) rehash(buckets_.size() * 2);
+        if (contains(v)) 
+        {
+            return;
+        }
+
+        if (size_ + 1 > buckets_.size()) 
+        {
+            rehash(buckets_.size() * 2);
+        }   
         auto& bucket = buckets_[Hash{}(v) % buckets_.size()];
+
         bucket.push_back(v);
         ++size_;
     }
 
     bool contains(const T& v) const 
     {
-        if (buckets_.empty()) return false;
+        if (buckets_.empty()) 
+        {
+            return false;
+        }
+        
         const auto& bucket = buckets_[Hash{}(v) % buckets_.size()];
         return std::find(bucket.begin(), bucket.end(), v) != bucket.end();
     }
