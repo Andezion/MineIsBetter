@@ -57,19 +57,38 @@ private:
 
         x->right = y->left;
         y->left = x;
-        
+
         return y;
     }
 
-    Node* insert_impl(Node* node, const K& k, const V& v) {
-        if (!node) return new Node(k, v, dist_(rng_));
-        if (k == node->key) { node->val = v; return node; }
-        if (k < node->key) {
+    Node* insert_impl(Node* node, const K& k, const V& v) 
+    {
+        if (!node) 
+        {
+            return new Node(k, v, dist_(rng_));
+        }
+
+        if (k == node->key) 
+        { 
+            node->val = v; 
+            return node; 
+        }
+
+        if (k < node->key) 
+        {
             node->left = insert_impl(node->left, k, v);
-            if (node->left->priority > node->priority) node = rotate_right(node);
-        } else {
+            if (node->left->priority > node->priority) 
+            {
+                node = rotate_right(node);
+            }
+        } 
+        else 
+        {
             node->right = insert_impl(node->right, k, v);
-            if (node->right->priority > node->priority) node = rotate_left(node);
+            if (node->right->priority > node->priority) 
+            {
+                node = rotate_left(node);
+            }
         }
         return node;
     }
