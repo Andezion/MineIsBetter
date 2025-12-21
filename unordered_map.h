@@ -5,11 +5,16 @@
 #include <functional>
 
 template<typename K, typename V, typename Hash = std::hash<K>>
-class unordered_map {
+class unordered_map 
+{
 public:
     unordered_map() = default;
-    std::optional<V> get(const K& key) const {
-        if (buckets_.empty()) return {};
+    std::optional<V> get(const K& key) const 
+    {
+        if (buckets_.empty()) 
+        {
+            return {};
+        }
         const auto& bucket = buckets_[Hash{}(key) % buckets_.size()];
         for (const auto& kv : bucket) if (kv.first == key) return kv.second;
         return {};
