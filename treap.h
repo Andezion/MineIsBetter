@@ -14,38 +14,50 @@ class treap
 
         Node* left = nullptr;
         Node* right = nullptr;
-        
+
         Node(const K& k, const V& v, unsigned p): key(k), val(v), priority(p) {}
     };
 
 public:
     treap(): rng_(std::random_device{}()) {}
 
-    void insert(const K& k, const V& v) {
+    void insert(const K& k, const V& v) 
+    {
         root_ = insert_impl(root_, k, v);
     }
 
-    V* find(const K& k) {
+    V* find(const K& k) 
+    {
         Node* cur = root_;
-        while (cur) {
-            if (k == cur->key) return &cur->val;
+        while (cur) 
+    {
+            if (k == cur->key) 
+            {
+                return &cur->val;
+            }
             cur = (k < cur->key) ? cur->left : cur->right;
         }
         return nullptr;
     }
 
 private:
-    Node* rotate_right(Node* y) {
+    Node* rotate_right(Node* y) 
+    {
         Node* x = y->left;
+
         y->left = x->right;
         x->right = y;
+
         return x;
     }
 
-    Node* rotate_left(Node* x) {
+    Node* rotate_left(Node* x) 
+    {
         Node* y = x->right;
+
         x->right = y->left;
         y->left = x;
+        
         return y;
     }
 
