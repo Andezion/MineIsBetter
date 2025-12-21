@@ -37,11 +37,25 @@ public:
     }
 
 private:
-    Node* insert_impl(Node* node, const K& k, const V& v) {
-        if (!node) return new Node(k, v);
-        if (k == node->key) { node->val = v; return node; }
-        if (k < node->key) node->left = insert_impl(node->left, k, v);
-        else node->right = insert_impl(node->right, k, v);
+    Node* insert_impl(Node* node, const K& k, const V& v) 
+    {
+        if (!node) 
+        {
+            return new Node(k, v);
+        }
+        if (k == node->key) 
+        {
+            node->val = v; 
+            return node; 
+        }
+        if (k < node->key) 
+        {
+            node->left = insert_impl(node->left, k, v);
+        }
+        else 
+        {
+            node->right = insert_impl(node->right, k, v);
+        }
         return node;
     }
 
