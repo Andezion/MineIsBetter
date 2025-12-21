@@ -15,20 +15,43 @@ public:
         {
             return {};
         }
+
         const auto& bucket = buckets_[Hash{}(key) % buckets_.size()];
-        for (const auto& kv : bucket) if (kv.first == key) return kv.second;
+
+        for (const auto& kv : bucket) 
+        {
+            if (kv.first == key) 
+            {
+                return kv.second;
+            }
+        }
         return {};
     }
 
-    void insert(const K& key, const V& val) {
-        if (buckets_.empty()) buckets_.resize(16);
-        auto& bucket = buckets_[Hash{}(key) % buckets_.size()];
-        for (auto& kv : bucket) {
-            if (kv.first == key) { kv.second = val; return; }
+    void insert(const K& key, const V& val) 
+    {
+        if (buckets_.empty()) 
+        {
+            buckets_.resize(16);
         }
+
+        auto& bucket = buckets_[Hash{}(key) % buckets_.size()];
+        for (auto& kv : bucket) 
+        {
+            if (kv.first == key) 
+            { 
+                kv.second = val; 
+                return; 
+            }
+        }
+
         bucket.emplace_back(key, val);
         ++size_;
-        if (size_ > buckets_.size()) rehash(buckets_.size() * 2);
+
+        if (size_ > buckets_.size()) 
+        {
+            rehash(buckets_.size() * 2);
+        }
     }
 
     bool contains(const K& key) const {
