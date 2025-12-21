@@ -54,10 +54,23 @@ public:
         }
     }
 
-    bool contains(const K& key) const {
-        if (buckets_.empty()) return false;
+    bool contains(const K& key) const 
+    {
+        if (buckets_.empty()) 
+        {
+            return false;
+        }
+
         const auto& bucket = buckets_[Hash{}(key) % buckets_.size()];
-        for (const auto& kv : bucket) if (kv.first == key) return true;
+
+        for (const auto& kv : bucket) 
+        {
+            if (kv.first == key) 
+            {
+                return true;
+            }
+        }
+        
         return false;
     }
 
