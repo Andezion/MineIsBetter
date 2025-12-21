@@ -70,15 +70,18 @@ public:
                 return true;
             }
         }
-        
+
         return false;
     }
 
 private:
-    void rehash(std::size_t new_bucket_count) {
+    void rehash(std::size_t new_bucket_count) 
+    {
         std::vector<std::vector<std::pair<K,V>>> new_buckets(new_bucket_count);
-        for (const auto& bucket : buckets_) {
-            for (const auto& kv : bucket) {
+        for (const auto& bucket : buckets_) 
+        {
+            for (const auto& kv : bucket) 
+            {
                 new_buckets[Hash{}(kv.first) % new_bucket_count].push_back(kv);
             }
         }
