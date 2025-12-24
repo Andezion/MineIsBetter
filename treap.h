@@ -30,12 +30,12 @@ public:
     {
         Node* cur = root_;
         while (cur) 
-    {
+        {
             if (k == cur->key) 
             {
                 return &cur->val;
             }
-            cur = (k < cur->key) ? cur->left : cur->right;
+            cur = k < cur->key ? cur->left : cur->right;
         }
         return nullptr;
     }
