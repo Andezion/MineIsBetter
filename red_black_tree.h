@@ -106,9 +106,18 @@ private:
             h->val = v;
         }
 
-        if (is_red(h->right) && !is_red(h->left)) h = rotate_left(h);
-        if (is_red(h->left) && is_red(h->left->left)) h = rotate_right(h);
-        if (is_red(h->left) && is_red(h->right)) flip_colors(h);
+        if (is_red(h->right) && !is_red(h->left)) 
+        {
+            h = rotate_left(h);
+        }
+        if (is_red(h->left) && is_red(h->left->left)) 
+        {
+            h = rotate_right(h);
+        }
+        if (is_red(h->left) && is_red(h->right)) 
+        {
+            flip_colors(h);
+        }
 
         return h;
     }
