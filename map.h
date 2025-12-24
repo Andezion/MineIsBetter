@@ -565,7 +565,7 @@ template<typename Key, typename T, typename Compare, typename Allocator>
 void rb_delete_fixup(map<Key,T,Compare,Allocator>& m, typename map<Key,T,Compare,Allocator>::Node* x, typename map<Key,T,Compare,Allocator>::Node* x_parent)
 {
 	using Node = typename map<Key,T,Compare,Allocator>::Node;
-	while ((x != m.root_) && (!x || x->color == map<Key,T,Compare,Allocator>::BLACK)) 
+	while (x != m.root_ && (!x || x->color == map<Key,T,Compare,Allocator>::BLACK))
 	{
 		if (x_parent && x == x_parent->left) 
 		{
