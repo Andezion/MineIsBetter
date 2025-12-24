@@ -78,7 +78,16 @@ public:
 
 	void swap(map& other) noexcept;
 	
-	struct value_compare { key_compare comp; explicit value_compare(key_compare c = key_compare()) : comp(c) {} bool operator()(const value_type& a, const value_type& b) const { return comp(a.first, b.first); } };
+	struct value_compare
+	{
+		key_compare comp;
+		explicit value_compare(key_compare c = key_compare()) : comp(c) {}
+		bool operator()(const value_type& a, const value_type& b) const
+		{
+			return comp(a.first, b.first);
+		}
+	};
+
 	bool contains(const key_type& key) const;
 	std::optional<value_type> extract(const key_type& key);
 	void merge(map& other);
