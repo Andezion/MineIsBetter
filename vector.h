@@ -90,7 +90,7 @@ public:
     iterator insert(const_iterator pos, size_type n, const value_type& value);
 
     template <typename InputIt,
-              typename = std::enable_if_t<!std::is_integral<InputIt>::value>>
+              typename = std::enable_if_t<!std::is_integral_v<InputIt>>>
     iterator insert(const_iterator pos, InputIt first, InputIt last);
 
     iterator insert(const_iterator pos, std::initializer_list<value_type> il);
@@ -224,6 +224,7 @@ vector<T, Alloc>::vector(InputIt first, InputIt last, const allocator_type &allo
     {
         data_ = std::allocator_traits<Alloc>::allocate(alloc_, n);
         size_type i = 0;
+
         for (auto it = first; it != last; ++it, ++i)
         {
             std::allocator_traits<Alloc>::construct(alloc_, data_ + i, *it);
@@ -421,6 +422,7 @@ template<typename InputIt, typename>
 void vector<T, Alloc>::assign(InputIt first, InputIt last)
 {
     clear();
+
     size_type new_size = std::distance(first, last);
     if (new_size > capacity_)
     {
@@ -837,7 +839,10 @@ vector<T, Alloc>::insert(const_iterator pos, InputIt first, InputIt last)
     size_type insert_pos = pos - data_;
     size_type count = std::distance(first, last);
 
-    if (count == 0) return data_ + insert_pos;
+    if (count == 0)
+    {
+        return data_ + insert_pos;
+    }
 
     if (size_ + count > capacity_)
     {
