@@ -1311,8 +1311,9 @@ void list<T>::sort()
     }
     auto merge_two = [&](Node* a, Node* b)->Node*
     {
-        Node dummy(T());
+        Node dummy{T()};
         Node* last = &dummy;
+
         while (a && b)
         {
             if (!(b->value < a->value))
@@ -1378,7 +1379,10 @@ void list<T>::sort()
 template<typename T>
 bool operator==(const list<T>& a, const list<T>& b)
 {
-    if (a.size() != b.size()) return false;
+    if (a.size() != b.size())
+    {
+        return false;
+    }
     return std::equal(a.begin(), a.end(), b.begin());
 }
 
