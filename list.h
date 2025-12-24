@@ -97,12 +97,42 @@ public:
 
         explicit iterator(Node* p = nullptr) : current(p) {}
 
-        T& operator*() noexcept { return current->value; }
-        T* operator->() noexcept { return &current->value; }
-        iterator& operator++() noexcept { if (current) current = current->next; return *this; }
-        iterator& operator--() noexcept { if (current) current = current->prev; else current = nullptr; return *this; }
-        bool operator!=(const iterator& other) const noexcept { return current != other.current; }
-        bool operator==(const iterator& other) const noexcept { return current == other.current; }
+        T& operator*() noexcept
+        {
+            return current->value;
+        }
+        T* operator->() noexcept
+        {
+            return &current->value;
+        }
+        iterator& operator++() noexcept
+        {
+            if (current)
+            {
+                current = current->next;
+            }
+            return *this;
+        }
+        iterator& operator--() noexcept
+        {
+            if (current)
+            {
+                current = current->prev;
+            }
+            else
+            {
+                current = nullptr;
+            }
+            return *this;
+        }
+        bool operator!=(const iterator& other) const noexcept
+        {
+            return current != other.current;
+        }
+        bool operator==(const iterator& other) const noexcept
+        {
+            return current == other.current;
+        }
     };
 
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -129,8 +159,8 @@ public:
     const_iterator begin() const noexcept;
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
-    size_type size() const noexcept;
-    size_type max_size() const noexcept;
+    [[nodiscard]] size_type size() const noexcept;
+    [[nodiscard]] size_type max_size() const noexcept;
     void resize(size_t n, const T& val = T());
     void clear() noexcept;
     const_reverse_iterator crbegin() const noexcept;
@@ -141,7 +171,7 @@ public:
     void emplace_back(Args&&... args);
     template<class... Args>
     void emplace_front(Args&&... args);
-    bool empty() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
     iterator end() noexcept;
     const_iterator end() const noexcept;
     iterator erase(const_iterator pos);
@@ -201,7 +231,7 @@ list<T>::list()
 }
 
 template<typename T>
-list<T>::list(size_t size)
+list<T>::list(const size_t size)
 {
     this->head = nullptr;
     this->tail = nullptr;
