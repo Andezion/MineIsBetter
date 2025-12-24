@@ -44,14 +44,45 @@ public:
 
         explicit const_iterator(const Node* p = nullptr) : current(p) {}
 
-        const T& operator*() const noexcept { return current->value; }
-        const T* operator->() const noexcept { return &current->value; }
-        const_iterator& operator++() noexcept { if (current) current = current->next; return *this; }
-        const_iterator& operator--() noexcept { if (current) current = current->prev; else current = nullptr; return *this; }
-        bool operator!=(const const_iterator& other) const noexcept { return current != other.current; }
-        bool operator==(const const_iterator& other) const noexcept { return current == other.current; }
+        const T& operator*() const noexcept
+        {
+            return current->value;
+        }
+        const T* operator->() const noexcept
+        {
+            return &current->value;
+        }
+        const_iterator& operator++() noexcept
+        {
+            if (current)
+            {
+                current = current->next;
+            }
+            return *this;
+        }
+        const_iterator& operator--() noexcept
+        {
+            if (current)
+            {
+                current = current->prev;
+            }
+            else
+            {
+                current = nullptr;
+            }
+            return *this;
 
-        const_iterator(const iterator& it) noexcept; // defined after iterator
+        }
+        bool operator!=(const const_iterator& other) const noexcept
+        {
+            return current != other.current;
+        }
+        bool operator==(const const_iterator& other) const noexcept
+        {
+            return current == other.current;
+        }
+
+        explicit const_iterator(const iterator& it) noexcept;
     };
 
     struct iterator
