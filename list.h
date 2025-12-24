@@ -160,7 +160,7 @@ public:
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
     [[nodiscard]] size_type size() const noexcept;
-    [[nodiscard]] size_type max_size() const noexcept;
+    [[nodiscard]] static size_type max_size() noexcept;
     void resize(size_t n, const T& val = T());
     void clear() noexcept;
     const_reverse_iterator crbegin() const noexcept;
@@ -342,10 +342,6 @@ void list<T>::assign(list &&other) noexcept
 
         other.size_of_list = 0;
     }
-    else
-    {
-        
-    }
 }
 
 template<typename T>
@@ -359,7 +355,7 @@ void list<T>::assign(std::initializer_list<T> init)
 }
 
 template<typename T>
-void list<T>::assign(size_t size, const T &value)
+void list<T>::assign(const size_t size, const T &value)
 {
     clear();
     for (size_t i = 0; i < size; ++i) 
@@ -423,16 +419,28 @@ typename list<T>::const_iterator list<T>::cend() const noexcept
 }
 
 template<typename T>
-typename list<T>::size_type list<T>::size() const noexcept { return size_of_list; }
-
-template<typename T>
-typename list<T>::size_type list<T>::max_size() const noexcept { return std::numeric_limits<size_t>::max(); }
-
-template<typename T>
-void list<T>::resize(size_t n, const T& val)
+typename list<T>::size_type list<T>::size() const noexcept
 {
-    while (size_of_list > n) pop_back();
-    while (size_of_list < n) push_back(val);
+    return size_of_list;
+}
+
+template<typename T>
+typename list<T>::size_type list<T>::max_size() noexcept
+{
+    return std::numeric_limits<size_t>::max();
+}
+
+template<typename T>
+void list<T>::resize(const size_t n, const T& val)
+{
+    while (size_of_list > n)
+    {
+        pop_back();
+    }
+    while (size_of_list < n)
+    {
+        push_back(val);
+    }
 }
 
 template<typename T>
@@ -525,7 +533,7 @@ void list<T>::pop_back()
         return;
     }
 
-    Node* p = tail;
+    const Node* p = tail;
     tail = tail->prev;
 
     if (tail) 
@@ -544,26 +552,47 @@ void list<T>::pop_back()
 template<typename T>
 void list<T>::pop_front()
 {
-    if (!head) return;
-    Node* p = head;
+    if (!head)
+    {
+        return;
+    }
+
+    const Node* p = head;
     head = head->next;
-    if (head) {
+    if (head)
+    {
         head->prev = nullptr;
-    } else {
+    }
+    else
+    {
         tail = nullptr;
     }
+
     delete p;
     --size_of_list;
 }
 
 template<typename T>
-typename list<T>::iterator list<T>::end() noexcept { return iterator(nullptr); }
+typename list<T>::iterator list<T>::end() noexcept
+{
+    return iterator(nullptr);
+}
 
 template<typename T>
-typename list<T>::const_iterator list<T>::end() const noexcept { return const_iterator(nullptr); }
+typename list<T>::const_iterator list<T>::end() const noexcept
+{
+    return const_iterator(nullptr);
+}
 
 template<typename T>
-T& list<T>::front() { if (!head) throw std::out_of_range("list::front"); return head->value; }
+T& list<T>::front()
+{
+    if (!head)
+    {
+        throw std::out_of_range("list::front");
+    }
+    return head->value;
+}
 
 template<typename T>
 const T& list<T>::front() const 
@@ -630,9 +659,12 @@ typename list<T>::iterator list<T>::insert(const_iterator position, const T& val
     Node* cur = const_cast<Node*>(position.current);
     Node* n = new Node(val, cur->prev, cur);
 
-    if (cur->prev) {
+    if (cur->prev)
+    {
         cur->prev->next = n;
-    } else {
+    }
+    else
+    {
         head = n;
     }
 
@@ -653,9 +685,12 @@ typename list<T>::iterator list<T>::insert(const_iterator position, T&& val)
     Node* cur = const_cast<Node*>(position.current);
     Node* n = new Node(std::move(val), cur->prev, cur);
 
-    if (cur->prev) {
+    if (cur->prev)
+    {
         cur->prev->next = n;
-    } else {
+    }
+    else
+    {
         head = n;
     }
 
@@ -678,9 +713,12 @@ typename list<T>::iterator list<T>::emplace(const_iterator position, Args&&... a
     Node* cur = const_cast<Node*>(position.current);
     Node* n = new Node(std::move(tmp), cur->prev, cur);
 
-    if (cur->prev) {
+    if (cur->prev)
+    {
         cur->prev->next = n;
-    } else {
+    }
+    else
+    {
         head = n;
     }
 
@@ -701,8 +739,16 @@ void list<T>::emplace_back(Args&&... args)
 {
     T tmp(std::forward<Args>(args)...);
     Node* n = new Node(std::move(tmp), tail, nullptr);
-    if (!head) head = n;
-    if (tail) tail->next = n;
+
+    if (!head)
+    {
+        head = n;
+    }
+    if (tail)
+    {
+        tail->next = n;
+    }
+
     tail = n;
     ++size_of_list;
 }
@@ -719,8 +765,15 @@ void list<T>::emplace_front(Args&&... args)
 {
     T tmp(std::forward<Args>(args)...);
     Node* n = new Node(std::move(tmp), nullptr, head);
-    if (!tail) tail = n;
-    if (head) head->prev = n;
+
+    if (!tail)
+    {
+        tail = n;
+    }
+    if (head)
+    {
+        head->prev = n;
+    }
     head = n;
     ++size_of_list;
 }
@@ -772,7 +825,11 @@ void list<T>::swap(list& x) noexcept
 template<typename T>
 void list<T>::unique()
 {
-    if (!head) return;
+    if (!head)
+    {
+        return;
+    }
+
     Node* cur = head;
     while (cur && cur->next)
     {
@@ -780,7 +837,16 @@ void list<T>::unique()
         {
             Node* dup = cur->next;
             cur->next = dup->next;
-            if (dup->next) dup->next->prev = cur; else tail = cur;
+
+            if (dup->next)
+            {
+                dup->next->prev = cur;
+            }
+            else
+            {
+                tail = cur;
+            }
+
             delete dup;
             --size_of_list;
         }
@@ -799,7 +865,7 @@ void list<T>::merge(list& x)
         return;
     }
     
-    Node dummy(T());
+    Node dummy{T()};
     Node* last = &dummy;
     Node* a = head;
     Node* b = x.head;
@@ -875,7 +941,7 @@ void list<T>::merge(list& x, Compare comp)
         return;
     }
 
-    Node dummy(T());
+    Node dummy{T()};
     Node* last = &dummy;
 
     Node* a = head;
@@ -997,7 +1063,7 @@ void list<T>::splice(const_iterator position, list& x)
 }
 
 template<typename T>
-void list<T>::splice(const_iterator position, list&& x)
+void list<T>::splice(const const_iterator position, list&& x)
 {
     splice(position, x);
 }
@@ -1013,7 +1079,7 @@ void list<T>::splice(const_iterator position, list& x, const_iterator i)
     Node* node = const_cast<Node*>(i.current);
 
     if (this == &x) 
-{
+    {
         if (position.current == node || position.current == node->next) 
         {
             return;
@@ -1216,7 +1282,10 @@ void list<T>::splice(const_iterator position, list&& x, const_iterator first, co
 template<typename T>
 void list<T>::sort()
 {
-    if (!head || !head->next) return;
+    if (!head || !head->next)
+    {
+        return;
+    }
 
     std::vector<Node*> runs;
     Node* cur = head;
