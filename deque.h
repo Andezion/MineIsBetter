@@ -131,7 +131,8 @@ public:
     template <class InputIterator> deque (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type());
     deque (const deque& x);
     deque (const deque& x, const allocator_type& alloc);
-    deque (deque&& x) noexcept ; deque (deque&& x, const allocator_type& alloc);
+    deque (deque&& x) noexcept;
+    deque (deque&& x, const allocator_type& alloc);
     deque (std::initializer_list<value_type> il, const allocator_type& alloc = allocator_type());
 
     template <class InputIterator>  void assign (InputIterator first, InputIterator last);
@@ -187,7 +188,7 @@ public:
     template <class U>  friend bool operator>  (const deque<U>& lhs, const deque<U>& rhs);
     template <class U>  friend bool operator>= (const deque<U>& lhs, const deque<U>& rhs);
 
-    template <class U>  friend void swap (deque<U>& x, deque<U>& y);
+    template <class U>  friend void swap (deque<U>& x, deque<U>& y) noexcept;
 };
 
 template<typename T>
@@ -390,7 +391,8 @@ typename deque<T>::const_iterator deque<T>::cend() const noexcept
 template<typename T>
 void deque<T>::clear() noexcept
 {
-    if (data_) {
+    if (data_)
+    {
         for (size_type i = 0; i < sz_; ++i)
         {
             size_type p = idx(i);
@@ -691,8 +693,14 @@ typename deque<T>::const_reverse_iterator deque<T>::rend() const { return const_
 template<typename T>
 void deque<T>::resize(const size_type n, T val)
 {
-    while (sz_ > n) pop_back();
-    while (sz_ < n) push_back(val);
+    while (sz_ > n)
+    {
+        pop_back();
+    }
+    while (sz_ < n)
+    {
+        push_back(val);
+    }
 }
 
 template<typename T>
@@ -735,6 +743,7 @@ template<typename T>
 void deque<T>::swap(deque& x) noexcept
 {
     using std::swap;
+
     swap(alloc_, x.alloc_);
     swap(data_, x.data_);
     swap(sz_, x.sz_);
