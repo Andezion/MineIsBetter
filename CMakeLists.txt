@@ -15,7 +15,6 @@ add_executable(MineIsBetter
         set.h
         map.h)
 
-# Added headers for new container implementations (skeletons)
 list(APPEND MINE_HEADERS
     small_vector.h
     static_vector.h
@@ -43,5 +42,4 @@ list(APPEND MINE_HEADERS
     lru_cache.h
 )
 
-# If headers are header-only, they may remain unused in targets; this keeps them tracked.
 target_sources(MineIsBetter PRIVATE ${MINE_HEADERS})
