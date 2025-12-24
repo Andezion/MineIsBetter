@@ -47,7 +47,10 @@ public:
         return true;
     }
 
-    bool same(std::size_t a, std::size_t b) { return find(a) == find(b); }
+    bool same(const std::size_t a, const std::size_t b)
+    {
+        return find(a) == find(b);
+    }
 
 private:
     std::vector<std::size_t> parent_;
