@@ -3,7 +3,8 @@
 #include <map>
 
 template<typename L, typename R>
-class bimap {
+class bimap
+{
 public:
     void insert(const L& l, const R& r)
     {
