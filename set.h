@@ -816,14 +816,20 @@ template<class T, class Compare, class Allocator>
 std::pair<typename set<T, Compare, Allocator>::iterator, typename set<T, Compare, Allocator>::iterator>
 set<T, Compare, Allocator>::equal_range(const key_type &key)
 {
-    return { lower_bound(key), upper_bound(key) };
+    return {
+        lower_bound(key),
+        upper_bound(key)
+    };
 }
 
 template<class T, class Compare, class Allocator>
 std::pair<typename set<T, Compare, Allocator>::const_iterator, typename set<T, Compare, Allocator>::const_iterator>
 set<T, Compare, Allocator>::equal_range(const key_type &key) const
 {
-    return { lower_bound(key), upper_bound(key) };
+    return {
+        lower_bound(key),
+        upper_bound(key)
+    };
 }
 
 template<class T, class Compare, class Allocator>
@@ -831,7 +837,10 @@ template<class K>
 std::pair<typename set<T, Compare, Allocator>::iterator, typename set<T, Compare, Allocator>::iterator>
 set<T, Compare, Allocator>::equal_range(const K &x)
 {
-    return { lower_bound(x), upper_bound(x) };
+    return {
+        lower_bound(x),
+        upper_bound(x)
+    };
 }
 
 template<class T, class Compare, class Allocator>
@@ -839,7 +848,10 @@ template<class K>
 std::pair<typename set<T, Compare, Allocator>::const_iterator, typename set<T, Compare, Allocator>::const_iterator>
 set<T, Compare, Allocator>::equal_range(const K &x) const
 {
-    return { lower_bound(x), upper_bound(x) };
+    return {
+        lower_bound(x),
+        upper_bound(x)
+    };
 }
 
 template<class T, class Compare, class Allocator>
@@ -847,16 +859,24 @@ template<class K>
 typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::lower_bound(const K &x)
 {
-    if (root_ == nullptr) return end();
+    if (root_ == nullptr)
+    {
+        return end();
+    }
+
     auto it = iterator(minimum(root_), this);
-    while (it != end() && comp_(*it, x)) ++it;
+    while (it != end() && comp_(*it, x))
+    {
+        ++it;
+    }
+
     return it;
 }
 
 
 template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::iterator
-set<T, Compare, Allocator>::erase(const_iterator first, const_iterator last)
+set<T, Compare, Allocator>::erase(const const_iterator first, const_iterator last)
 {
     auto it = first;
     while (it != last)
@@ -872,7 +892,9 @@ set<T, Compare, Allocator>::erase(const key_type &key)
 {
     iterator it = find(key);
     if (it == end())
+    {
         return 0;
+    }
 
     erase(it);
     return 1;
@@ -882,7 +904,9 @@ template<class T, class Compare, class Allocator>
 void set<T, Compare, Allocator>::swap(set &other) noexcept
 {
     if (this == &other)
+    {
         return;
+    }
 
     std::swap(root_, other.root_);
     std::swap(size_, other.size_);
@@ -944,7 +968,11 @@ typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::erase(iterator pos)
 {
     Node* node = pos.node_;
-    if (!node) return iterator(nullptr, this);
+    if (!node)
+    {
+        return iterator(nullptr, this);
+    }
+
     Node* next = successor(node);
     erase_node(node);
     return iterator(next, this);
@@ -955,7 +983,10 @@ typename set<T, Compare, Allocator>::iterator
 set<T, Compare, Allocator>::erase(const_iterator pos)
 {
     Node* node = pos.node_;
-    if (!node) return iterator(nullptr, this);
+    if (!node)
+    {
+        return iterator(nullptr, this);
+    }
     Node* next = successor(node);
     erase_node(node);
     return iterator(next, this);
@@ -1172,7 +1203,9 @@ template<class T, class Compare, class Allocator>
 typename set<T, Compare, Allocator>::Node* set<T, Compare, Allocator>::copy_tree(Node* other_node, Node* parent)
 {
     if (!other_node)
+    {
         return nullptr;
+    }
     
     Node* new_node = create_node(other_node->value);
     new_node->is_black = other_node->is_black;
@@ -1199,11 +1232,17 @@ typename set<T, Compare, Allocator>::Node* set<T, Compare, Allocator>::find_node
     while (current)
     {
         if (comp_(key, current->value))
+        {
             current = current->left;
+        }
         else if (comp_(current->value, key))
+        {
             current = current->right;
+        }
         else
+        {
             return current;
+        }
     }
     return nullptr;
 }
@@ -1229,9 +1268,18 @@ typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::find(c
     Node* current = root_;
     while (current)
     {
-        if (comp_(x, current->value)) current = current->left;
-        else if (comp_(current->value, x)) current = current->right;
-        else return iterator(current, this);
+        if (comp_(x, current->value))
+        {
+            current = current->left;
+        }
+        else if (comp_(current->value, x))
+        {
+            current = current->right;
+        }
+        else
+        {
+            return iterator(current, this);
+        }
     }
     return end();
 }
@@ -1243,9 +1291,18 @@ typename set<T, Compare, Allocator>::const_iterator set<T, Compare, Allocator>::
     Node* current = root_;
     while (current)
     {
-        if (comp_(x, current->value)) current = current->left;
-        else if (comp_(current->value, x)) current = current->right;
-        else return const_iterator(current, this);
+        if (comp_(x, current->value))
+        {
+            current = current->left;
+        }
+        else if (comp_(current->value, x))
+        {
+            current = current->right;
+        }
+        else
+        {
+            return const_iterator(current, this);
+        }
     }
     return cend();
 }
@@ -1256,15 +1313,26 @@ set<T, Compare, Allocator>::insert_node(const value_type &value)
 {
     Node* y = nullptr;
     Node* x = root_;
+
     while (x)
     {
         y = x;
-        if (comp_(value, x->value)) x = x->left;
-        else if (comp_(x->value, value)) x = x->right;
-        else return {x, false};
+        if (comp_(value, x->value))
+        {
+            x = x->left;
+        }
+        else if (comp_(x->value, value))
+        {
+            x = x->right;
+        }
+        else
+        {
+            return {x, false};
+        }
     }
 
     Node* z = create_node(value);
+
     z->parent = y;
     z->left = z->right = nullptr;
     z->is_black = false;
@@ -1283,8 +1351,14 @@ set<T, Compare, Allocator>::insert_node(const value_type &value)
     }
 
     ++size_;
-    if (!leftmost_ || comp_(z->value, leftmost_->value)) leftmost_ = z;
-    if (!rightmost_ || comp_(rightmost_->value, z->value)) rightmost_ = z;
+    if (!leftmost_ || comp_(z->value, leftmost_->value))
+    {
+        leftmost_ = z;
+    }
+    if (!rightmost_ || comp_(rightmost_->value, z->value))
+    {
+        rightmost_ = z;
+    }
 
     fix_insert(z);
     return {z, true};
