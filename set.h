@@ -1740,7 +1740,10 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
 
                 w->is_black = parent->is_black;
                 parent->is_black = true;
-                if (w->right) w->right->is_black = true;
+                if (w->right)
+                {
+                    w->right->is_black = true;
+                }
                 rotate_left(parent);
                 node = root_;
             }
@@ -1750,15 +1753,22 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
             Node *w = parent->left;
             
             if (!w)
+            {
                 break;
+            }
 
             if (!w->is_black)
             {
                 w->is_black = true;
                 parent->is_black = false;
+
                 rotate_right(parent);
                 w = parent->left;
-                if (!w) break;
+
+                if (!w)
+                {
+                    break;
+                }
             }
 
             if ((!w->right || w->right->is_black) &&
@@ -1772,11 +1782,19 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
             {
                 if (!w->left || w->left->is_black)
                 {
-                    if (w->right) w->right->is_black = true;
+                    if (w->right)
+                    {
+                        w->right->is_black = true;
+                    }
+
                     w->is_black = false;
                     rotate_left(w);
                     w = parent->left;
-                    if (!w) break;
+
+                    if (!w)
+                    {
+                        break;
+                    }
                 }
                 w->is_black = parent->is_black;
                 parent->is_black = true;
@@ -1872,7 +1890,10 @@ void set<T, Compare, Allocator>::transplant(Node *u, Node *v)
 template<class T, class Compare, class Alloc>
 bool operator==(const set<T, Compare, Alloc> &lhs, const set<T, Compare, Alloc> &rhs)
 {
-    if (lhs.size() != rhs.size()) return false;
+    if (lhs.size() != rhs.size())
+    {
+        return false;
+    }
     return std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
@@ -1922,7 +1943,7 @@ template<class T, class Compare, class Alloc, class Pred>
 typename set<T, Compare, Alloc>::size_type erase_if(set<T, Compare, Alloc> &c, Pred pred)
 {
     size_t old_size = c.size();
-    for (auto it = c.begin(); it != c.end(); )
+    for (auto it = c.begin(); it != c.end();)
     {
         if (pred(*it))
         {
