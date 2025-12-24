@@ -1,7 +1,5 @@
 #pragma once
 
-#include <utility>
-
 template<typename K, typename V>
 class red_black_tree 
 {
@@ -17,7 +15,7 @@ class red_black_tree
 
         Color color = RED;
 
-        Node(const K& k, const V& v, Color c = RED): key(k), val(v), color(c) {}
+        Node(const K& k, const V& v, const Color c = RED): key(k), val(v), color(c) {}
     };
 
 public:
@@ -36,7 +34,7 @@ public:
             {
                 return &cur->val;
             }
-            cur = (k < cur->key) ? cur->left : cur->right;
+            cur = k < cur->key ? cur->left : cur->right;
         }
         return nullptr;
     }
@@ -75,14 +73,14 @@ private:
 
     void flip_colors(Node* h)
     {
-        h->color = (h->color == RED) ? BLACK : RED;
+        h->color = h->color == RED ? BLACK : RED;
         if (h->left) 
         {
-            h->left->color = (h->left->color == RED) ? BLACK : RED;
+            h->left->color = h->left->color == RED ? BLACK : RED;
         }
         if (h->right) 
         {
-            h->right->color = (h->right->color == RED) ? BLACK : RED;
+            h->right->color = h->right->color == RED ? BLACK : RED;
         }
     }
 
