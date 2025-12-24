@@ -1370,15 +1370,26 @@ set<T, Compare, Allocator>::insert_node(value_type &&value)
 {
     Node* y = nullptr;
     Node* x = root_;
+
     while (x)
     {
         y = x;
-        if (comp_(value, x->value)) x = x->left;
-        else if (comp_(x->value, value)) x = x->right;
-        else return {x, false};
+        if (comp_(value, x->value))
+        {
+            x = x->left;
+        }
+        else if (comp_(x->value, value))
+        {
+            x = x->right;
+        }
+        else
+        {
+            return {x, false};
+        }
     }
 
     Node* z = create_node(std::move(value));
+
     z->parent = y;
     z->left = z->right = nullptr;
     z->is_black = false;
@@ -1397,8 +1408,14 @@ set<T, Compare, Allocator>::insert_node(value_type &&value)
     }
 
     ++size_;
-    if (!leftmost_ || comp_(z->value, leftmost_->value)) leftmost_ = z;
-    if (!rightmost_ || comp_(rightmost_->value, z->value)) rightmost_ = z;
+    if (!leftmost_ || comp_(z->value, leftmost_->value))
+    {
+        leftmost_ = z;
+    }
+    if (!rightmost_ || comp_(rightmost_->value, z->value))
+    {
+        rightmost_ = z;
+    }
 
     fix_insert(z);
     return {z, true};
@@ -1409,7 +1426,9 @@ std::pair<typename set<T, Compare, Allocator>::iterator, bool>
 set<T, Compare, Allocator>::insert(const value_type &value)
 {
     auto pr = insert_node(value);
-    return { iterator(pr.first, this), pr.second };
+    return {
+        iterator(pr.first, this), pr.second
+    };
 }
 
 template<class T, class Compare, class Allocator>
@@ -1417,7 +1436,10 @@ std::pair<typename set<T, Compare, Allocator>::iterator, bool>
 set<T, Compare, Allocator>::insert(value_type &&value)
 {
     auto pr = insert_node(std::move(value));
-    return { iterator(pr.first, this), pr.second };
+    return {
+        iterator(pr.first, this),
+        pr.second
+    };
 }
 
 template<class T, class Compare, class Allocator>
@@ -1437,7 +1459,9 @@ template<class InputIt>
 void set<T, Compare, Allocator>::insert(InputIt first, InputIt last)
 {
     for (; first != last; ++first)
+    {
         insert(*first);
+    }
 }
 
 template<class T, class Compare, class Allocator>
@@ -1464,10 +1488,16 @@ typename set<T, Compare, Allocator>::iterator set<T, Compare, Allocator>::emplac
 template<class T, class Compare, class Allocator>
 void set<T, Compare, Allocator>::erase_node(Node* z)
 {
-    if (!z) return;
+    if (!z)
+    {
+        return;
+    }
+
     Node* y = z;
+
     Node* x = nullptr;
     Node* x_parent = nullptr;
+
     bool y_original_black = y->is_black;
 
     if (!z->left)
@@ -1487,6 +1517,7 @@ void set<T, Compare, Allocator>::erase_node(Node* z)
         y = minimum(z->right);
         y_original_black = y->is_black;
         x = y->right;
+
         if (y->parent == z)
         {
             if (x) x->parent = y;
@@ -1496,12 +1527,18 @@ void set<T, Compare, Allocator>::erase_node(Node* z)
         {
             transplant(y, y->right);
             y->right = z->right;
-            if (y->right) y->right->parent = y;
+            if (y->right)
+            {
+                y->right->parent = y;
+            }
             x_parent = y->parent;
         }
         transplant(z, y);
         y->left = z->left;
-        if (y->left) y->left->parent = y;
+        if (y->left)
+        {
+            y->left->parent = y;
+        }
         y->is_black = z->is_black;
     }
 
@@ -1511,9 +1548,13 @@ void set<T, Compare, Allocator>::erase_node(Node* z)
     }
 
     if (z == leftmost_)
+    {
         leftmost_ = root_ ? minimum(root_) : nullptr;
+    }
     if (z == rightmost_)
+    {
         rightmost_ = root_ ? maximum(root_) : nullptr;
+    }
 
     destroy_node(z);
     --size_;
@@ -1645,22 +1686,30 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
     while (node != root_ && (!node || node->is_black))
     {
         if (!parent)
+        {
             break;
+        }
         
         if (node == parent->left)
         {
             Node *w = parent->right;
             
             if (!w)
+            {
                 break;
+            }
 
             if (!w->is_black)
             {
                 w->is_black = true;
                 parent->is_black = false;
+
                 rotate_left(parent);
                 w = parent->right;
-                if (!w) break;
+                if (!w)
+                {
+                    break;
+                }
             }
 
             if ((!w->left || w->left->is_black) &&
@@ -1674,11 +1723,19 @@ void set<T, Compare, Allocator>::fix_erase(Node *node, Node *parent)
             {
                 if (!w->right || w->right->is_black)
                 {
-                    if (w->left) w->left->is_black = true;
+                    if (w->left)
+                    {
+                        w->left->is_black = true;
+                    }
+
                     w->is_black = false;
                     rotate_right(w);
                     w = parent->right;
-                    if (!w) break;
+
+                    if (!w)
+                    {
+                        break;
+                    }
                 }
 
                 w->is_black = parent->is_black;
