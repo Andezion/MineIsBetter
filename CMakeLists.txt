@@ -40,6 +40,7 @@ list(APPEND MINE_HEADERS
     segment_tree.h
     fenwick_tree.h
     lru_cache.h
+    queue.h
 )
 
 target_sources(MineIsBetter PRIVATE ${MINE_HEADERS})
