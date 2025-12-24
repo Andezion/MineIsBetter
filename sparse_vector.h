@@ -4,30 +4,53 @@
 #include <vector>
 
 template<typename Index, typename T>
-class sparse_vector {
+class sparse_vector
+{
 public:
-    T& operator[](Index i) { return data_[i]; }
+    T& operator[](Index i)
+    {
+        return data_[i];
+    }
 
     const T* get(Index i) const
     {
         auto it = data_.find(i);
-        if (it == data_.end()) return nullptr;
+        if (it == data_.end())
+        {
+            return nullptr;
+        }
         return &it->second;
     }
 
-    bool contains(Index i) const { return data_.count(i) != 0; }
+    bool contains(Index i) const
+    {
+        return data_.contains(i);
+    }
 
-    void erase(Index i) { data_.erase(i); }
+    void erase(Index i)
+    {
+        data_.erase(i);
+    }
 
-    void clear() noexcept { data_.clear(); }
+    void clear() noexcept
+    {
+        data_.clear();
+    }
 
-    size_t size() const noexcept { return data_.size(); }
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return data_.size();
+    }
 
     std::vector<Index> keys() const
     {
         std::vector<Index> out;
         out.reserve(data_.size());
-        for (auto const& kv : data_) out.push_back(kv.first);
+
+        for (auto const& kv : data_)
+        {
+            out.push_back(kv.first);
+        }
         return out;
     }
 
