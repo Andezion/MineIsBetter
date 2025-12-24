@@ -2,7 +2,6 @@
 
 #include "deque.h"
 #include <utility>
-#include <cstddef>
 
 template<typename T, typename Container = deque<T>>
 class queue
@@ -117,12 +116,12 @@ template<class U, class C> bool operator>(const queue<U,C>& lhs, const queue<U,C
 
 template<class U, class C> bool operator<=(const queue<U,C>& lhs, const queue<U,C>& rhs) 
 { 
-    return (rhs <= lhs); 
+    return rhs <= lhs;
 }
 
 template<class U, class C> bool operator>=(const queue<U,C>& lhs, const queue<U,C>& rhs) 
 { 
-    return (lhs <= rhs); 
+    return lhs <= rhs;
 }
 
 template<class U, class C> bool operator<(const queue<U,C>& lhs, const queue<U,C>& rhs) 
