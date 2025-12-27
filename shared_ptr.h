@@ -41,7 +41,10 @@ public:
     shared_ptr() noexcept = default;
     explicit shared_ptr(T* p) : ptr_(p), ctrl_(p ? new control_block<T>(p) : nullptr) {}
 
-    ~shared_ptr() { release(); }
+    ~shared_ptr()
+    {
+        release();
+    }
 
     shared_ptr(const shared_ptr& o) noexcept : ptr_(o.ptr_)
     {
