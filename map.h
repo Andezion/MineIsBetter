@@ -378,7 +378,6 @@ map_create_node(map<Key,T,Compare,Allocator>& m, const typename map<Key,T,Compar
 {
 	using Map = map<Key,T,Compare,Allocator>;
 	typename Map::node_allocator_type &alloc = m.node_alloc_;
-	Map::node_alloc_traits::allocate(alloc, 1);
 
 	auto* p = Map::node_alloc_traits::allocate(alloc, 1);
 
