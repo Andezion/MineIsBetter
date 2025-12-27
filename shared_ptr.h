@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <utility>
 
 template<typename T>
 class shared_ptr;
@@ -17,8 +16,16 @@ struct control_block
     T* ptr;
 
     explicit control_block(T* p) : strong(1), weak(1), ptr(p) {}
-    void destroy_object() { delete ptr; ptr = nullptr; }
-    void delete_self() { delete this; }
+
+    void destroy_object()
+    {
+        delete ptr;
+        ptr = nullptr;
+    }
+    void delete_self() const
+    {
+        delete this;
+    }
 };
 
 template<typename T>
@@ -38,7 +45,11 @@ public:
 
     shared_ptr(const shared_ptr& o) noexcept : ptr_(o.ptr_), ctrl_(o.ctrl_)
     {
-        if (ctrl_) ctrl_->strong.fetch_add(1, std::memory_order_relaxed);
+        ctrl_ =  o.ctrl_;
+        if (ctrl_)
+        {
+            ctrl_->strong.fetch_add(1, std::memory_order_relaxed);
+        }
     }
 
     shared_ptr& operator=(const shared_ptr& o) noexcept
@@ -47,7 +58,10 @@ public:
         {
             release();
             ptr_ = o.ptr_; ctrl_ = o.ctrl_;
-            if (ctrl_) ctrl_->strong.fetch_add(1, std::memory_order_relaxed);
+            if (ctrl_)
+            {
+                ctrl_->strong.fetch_add(1, std::memory_order_relaxed);
+            }
         }
         return *this;
     }
@@ -63,7 +77,8 @@ public:
         {
             release();
             ptr_ = o.ptr_; ctrl_ = o.ctrl_;
-            o.ptr_ = nullptr; o.ctrl_ = nullptr;
+            o.ptr_ = nullptr;
+            o.ctrl_ = nullptr;
         }
         return *this;
     }
