@@ -76,44 +76,76 @@ public:
         if (this != &o)
         {
             release();
-            ptr_ = o.ptr_; ctrl_ = o.ctrl_;
+
+            ptr_ = o.ptr_;
+            ctrl_ = o.ctrl_;
+
             o.ptr_ = nullptr;
             o.ctrl_ = nullptr;
         }
         return *this;
     }
 
-    T* get() const noexcept { return ptr_; }
-    T& operator*() const noexcept { return *ptr_; }
-    T* operator->() const noexcept { return ptr_; }
-    explicit operator bool() const noexcept { return ptr_ != nullptr; }
+    T* get() const noexcept
+    {
+        return ptr_;
+    }
+    T& operator*() const noexcept
+    {
+        return *ptr_;
+    }
+    T* operator->() const noexcept
+    {
+        return ptr_;
+    }
+    explicit operator bool() const noexcept
+    {
+        return ptr_ != nullptr;
+    }
 
-    long use_count() const noexcept { return ctrl_ ? static_cast<long>(ctrl_->strong.load(std::memory_order_relaxed)) : 0; }
+    [[nodiscard]] long use_count() const noexcept
+    {
+        return ctrl_ ? static_cast<long>(ctrl_->strong.load(std::memory_order_relaxed)) : 0;
+    }
 
-    void reset() noexcept { release(); }
+    void reset() noexcept
+    {
+        release();
+    }
+
     void reset(T* p)
     {
         release();
-        if (p) ctrl_ = new control_block<T>(p);
+        if (p)
+        {
+            ctrl_ = new control_block<T>(p);
+        }
         ptr_ = p;
     }
 
     static shared_ptr make_from_control(control_block<T>* c) noexcept
     {
         shared_ptr s;
-        if (!c) return s;
+        if (!c)
+        {
+            return s;
+        }
+
         s.ctrl_ = c;
         s.ptr_ = c->ptr;
+
         return s;
     }
 
 private:
     void release() noexcept
     {
-        if (!ctrl_) { ptr_ = nullptr; return; }
+        if (!ctrl_)
+        {
+            ptr_ = nullptr; return;
+        }
 
-        size_t prev = ctrl_->strong.fetch_sub(1);
-        if (prev == 1)
+        if (const size_t prev = ctrl_->strong.fetch_sub(1); prev == 1)
         {
             ctrl_->destroy_object();
             if (ctrl_->weak.fetch_sub(1) == 1)
@@ -121,6 +153,7 @@ private:
                 ctrl_->delete_self();
             }
         }
+
         ptr_ = nullptr;
         ctrl_ = nullptr;
     }
