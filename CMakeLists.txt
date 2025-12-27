@@ -43,4 +43,10 @@ list(APPEND MINE_HEADERS
     queue.h
 )
 
-target_sources(MineIsBetter PRIVATE ${MINE_HEADERS})
+list (APPEND POINTERS
+    unique_ptr.h
+    weak_ptr.h
+    shared_ptr.h
+)
+
+target_sources(MineIsBetter PRIVATE ${MINE_HEADERS} PRIVATE ${POINTERS})
