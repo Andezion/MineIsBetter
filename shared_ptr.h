@@ -166,8 +166,21 @@ class weak_ptr
 
 public:
     weak_ptr() noexcept = default;
-    weak_ptr(const shared_ptr<T>& sp) noexcept : ctrl_(sp.ctrl_) { if (ctrl_) ctrl_->weak.fetch_add(1, std::memory_order_relaxed); }
-    weak_ptr(const weak_ptr& o) noexcept : ctrl_(o.ctrl_) { if (ctrl_) ctrl_->weak.fetch_add(1, std::memory_order_relaxed); }
+    explicit weak_ptr(const shared_ptr<T>& sp) noexcept : ctrl_(sp.ctrl_)
+    {
+        if (ctrl_)
+        {
+            ctrl_->weak.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
+    weak_ptr(const weak_ptr& o) noexcept
+    {
+        ctrl_ = o.ctrl_;
+        if (ctrl_)
+        {
+            ctrl_->weak.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
 
     weak_ptr& operator=(const weak_ptr& o) noexcept
     {
@@ -178,7 +191,10 @@ public:
                 ctrl_->delete_self();
             }
             ctrl_ = o.ctrl_;
-            if (ctrl_) ctrl_->weak.fetch_add(1, std::memory_order_relaxed);
+            if (ctrl_)
+            {
+                ctrl_->weak.fetch_add(1, std::memory_order_relaxed);
+            }
         }
         return *this;
     }
