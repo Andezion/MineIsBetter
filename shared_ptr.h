@@ -43,7 +43,7 @@ public:
 
     ~shared_ptr() { release(); }
 
-    shared_ptr(const shared_ptr& o) noexcept : ptr_(o.ptr_), ctrl_(o.ctrl_)
+    shared_ptr(const shared_ptr& o) noexcept : ptr_(o.ptr_)
     {
         ctrl_ =  o.ctrl_;
         if (ctrl_)
@@ -207,12 +207,21 @@ public:
         }
     }
 
-    bool expired() const noexcept { return !ctrl_ || ctrl_->strong.load(std::memory_order_relaxed) == 0; }
-    long use_count() const noexcept { return ctrl_ ? static_cast<long>(ctrl_->strong.load(std::memory_order_relaxed)) : 0; }
+    [[nodiscard]] bool expired() const noexcept
+    {
+        return !ctrl_ || ctrl_->strong.load(std::memory_order_relaxed) == 0;
+    }
+    [[nodiscard]] long use_count() const noexcept
+    {
+        return ctrl_ ? static_cast<long>(ctrl_->strong.load(std::memory_order_relaxed)) : 0;
+    }
 
     shared_ptr<T> lock() const noexcept
     {
-        if (!ctrl_) return shared_ptr<T>();
+        if (!ctrl_)
+        {
+            return shared_ptr<T>();
+        }
 
         size_t s = ctrl_->strong.load();
         while (s != 0)
