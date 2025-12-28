@@ -167,7 +167,7 @@ ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value)
 template<typename ForwardIt, typename T, typename Compare>
 bool binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp)
 {
-    auto it = lower_bound(first, last, value, comp);
+    auto it = mib::lower_bound(first, last, value, comp);
     return it != last && !comp(value, *it);
 }
 
@@ -308,7 +308,7 @@ void sort_heap(RandomIt first, RandomIt last)
 {
     while (last - first > 1)
     {
-        pop_heap(first, last);
+        mib::pop_heap(first, last);
         --last;
     }
 }
