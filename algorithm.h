@@ -57,27 +57,37 @@ void quick_sort(RandomIt first, RandomIt last, Compare comp) {
 }
 
 template<typename RandomIt>
-void sort(RandomIt first, RandomIt last) {
+void sort(RandomIt first, RandomIt last)
+{
     sort(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
-void sort(RandomIt first, RandomIt last, Compare comp) {
+void sort(RandomIt first, RandomIt last, Compare comp)
+{
     quick_sort(first, last, comp);
 }
 
 template<typename ForwardIt, typename T, typename Compare>
-ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) {
+ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp)
+{
     using Diff = typename std::iterator_traits<ForwardIt>::difference_type;
     Diff len = std::distance(first, last);
-    while (len > 0) {
+
+    while (len > 0)
+    {
         Diff half = len >> 1;
         ForwardIt mid = first;
+
         std::advance(mid, half);
-        if (comp(*mid, value)) {
+
+        if (comp(*mid, value))
+        {
             first = ++mid;
             len -= half + 1;
-        } else {
+        }
+        else
+        {
             len = half;
         }
     }
@@ -85,22 +95,31 @@ ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare c
 }
 
 template<typename ForwardIt, typename T>
-ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value) {
+ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value)
+{
     return lower_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
 template<typename ForwardIt, typename T, typename Compare>
-ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp) {
+ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare comp)
+{
     using Diff = typename std::iterator_traits<ForwardIt>::difference_type;
     Diff len = std::distance(first, last);
-    while (len > 0) {
+
+    while (len > 0)
+    {
         Diff half = len >> 1;
         ForwardIt mid = first;
+
         std::advance(mid, half);
-        if (!comp(value, *mid)) {
+
+        if (!comp(value, *mid))
+        {
             first = ++mid;
             len -= half + 1;
-        } else {
+        }
+        else
+        {
             len = half;
         }
     }
@@ -108,18 +127,21 @@ ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare c
 }
 
 template<typename ForwardIt, typename T>
-ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value) {
+ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value)
+{
     return upper_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
 template<typename ForwardIt, typename T, typename Compare>
-bool binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp) {
+bool binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp)
+{
     auto it = lower_bound(first, last, value, comp);
-    return (it != last) && !comp(value, *it);
+    return it != last && !comp(value, *it);
 }
 
 template<typename ForwardIt, typename T>
-bool binary_search(ForwardIt first, ForwardIt last, const T& value) {
+bool binary_search(ForwardIt first, ForwardIt last, const T& value)
+{
     return binary_search(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
