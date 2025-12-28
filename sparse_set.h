@@ -13,7 +13,7 @@ public:
 	}
 	bool contains(const T& v) const
 	{
-		return data_.contains(v);
+		return data_.find(v) != data_.end();
 	}
 	bool erase(const T& v)
 	{
