@@ -124,71 +124,136 @@ bool binary_search(ForwardIt first, ForwardIt last, const T& value) {
 }
 
 template<typename RandomIt, typename Compare>
-void push_heap(RandomIt first, RandomIt last, Compare comp) {
-    using Diff = typename std::iterator_traits<RandomIt>::difference_type;
-    if (first == last) return;
+void push_heap(RandomIt first, RandomIt last, Compare comp)
+{
+    if (first == last)
+    {
+        return;
+    }
+
     auto child = last - 1;
-    while (child != first) {
+    while (child != first)
+    {
         auto parent = first + (std::distance(first, child) - 1) / 2;
-        if (comp(*parent, *child)) { std::iter_swap(parent, child); child = parent; }
-        else break;
+        if (comp(*parent, *child))
+        {
+            std::iter_swap(parent, child);
+            child = parent;
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
 template<typename RandomIt>
-void push_heap(RandomIt first, RandomIt last) {
+void push_heap(RandomIt first, RandomIt last)
+{
     push_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
-void pop_heap(RandomIt first, RandomIt last, Compare comp) {
-    if (last - first <= 1) return;
-    std::iter_swap(first, last-1);
-    auto end = last-1;
+void pop_heap(RandomIt first, RandomIt last, Compare comp)
+{
+    if (last - first <= 1)
+    {
+        return;
+    }
+
+    std::iter_swap(first, last - 1);
+
+    auto end = last - 1;
     auto parent = first;
-    while (true) {
+
+    while (true)
+    {
         auto left = first + (std::distance(first, parent) * 2 + 1);
-        if (left >= end) break;
+        if (left >= end)
+        {
+            break;
+        }
+
         auto right = left + 1;
         auto candidate = left;
-        if (right < end && comp(*candidate, *right)) candidate = right;
-        if (comp(*parent, *candidate)) { std::iter_swap(parent, candidate); parent = candidate; }
-        else break;
+        if (right < end && comp(*candidate, *right))
+        {
+            candidate = right;
+        }
+
+        if (comp(*parent, *candidate))
+        {
+            std::iter_swap(parent, candidate); parent = candidate;
+        }
+        else
+        {
+            break;
+        }
     }
 }
 
 template<typename RandomIt>
-void pop_heap(RandomIt first, RandomIt last) {
+void pop_heap(RandomIt first, RandomIt last)
+{
     pop_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
-void make_heap(RandomIt first, RandomIt last, Compare comp) {
+void make_heap(RandomIt first, RandomIt last, Compare comp)
+{
     auto n = std::distance(first, last);
-    if (n < 2) return;
-    for (auto start = first + (n-2)/2; ; --start) {
+    if (n < 2)
+    {
+        return;
+    }
+
+    for (auto start = first + (n - 2) / 2; ; --start)
+    {
         auto parent = start;
-        while (true) {
+        while (true)
+        {
             auto left = first + (std::distance(first, parent) * 2 + 1);
-            if (left >= last) break;
+            if (left >= last)
+            {
+                break;
+            }
+
             auto right = left + 1;
             auto candidate = left;
-            if (right < last && comp(*candidate, *right)) candidate = right;
-            if (comp(*parent, *candidate)) { std::iter_swap(parent, candidate); parent = candidate; }
-            else break;
+
+            if (right < last && comp(*candidate, *right))
+            {
+                candidate = right;
+            }
+
+            if (comp(*parent, *candidate))
+            {
+                std::iter_swap(parent, candidate);
+                parent = candidate;
+            }
+            else
+            {
+                break;
+            }
         }
-        if (start == first) break;
+        if (start == first)
+        {
+            break;
+        }
     }
 }
 
 template<typename RandomIt>
-void make_heap(RandomIt first, RandomIt last) {
+void make_heap(RandomIt first, RandomIt last)
+{
     make_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt>
-void sort_heap(RandomIt first, RandomIt last) {
-    while (last - first > 1) {
+void sort_heap(RandomIt first, RandomIt last)
+{
+    while (last - first > 1)
+    {
         pop_heap(first, last);
         --last;
     }
