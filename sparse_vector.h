@@ -24,7 +24,7 @@ public:
 
     bool contains(Index i) const
     {
-        return data_.contains(i);
+        return data_.find(i) != data_.end();
     }
 
     void erase(Index i)
