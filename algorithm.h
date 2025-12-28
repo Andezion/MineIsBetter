@@ -31,24 +31,56 @@ void insertion_sort(RandomIt first, RandomIt last, Compare comp)
 }
 
 template<typename RandomIt, typename Compare>
-void quick_sort(RandomIt first, RandomIt last, Compare comp) {
+void quick_sort(RandomIt first, RandomIt last, Compare comp)
+{
     using Diff = typename std::iterator_traits<RandomIt>::difference_type;
     Diff len = std::distance(first, last);
-    if (len <= 1) return;
-    if (len < 16) { insertion_sort(first, last, comp); return; }
+    if (len <= 1)
+    {
+        return;
+    }
+    if (len < 16)
+    {
+        insertion_sort(first, last, comp);
+        return;
+    }
 
-    auto mid = first + len/2;
+    auto mid = first + len / 2;
 
-    if (comp(*mid, *first)) std::iter_swap(first, mid);
-    if (comp(*(last-1), *first)) std::iter_swap(first, last-1);
-    if (comp(*(last-1), *mid)) std::iter_swap(mid, last-1);
+    if (comp(*mid, *first))
+    {
+        std::iter_swap(first, mid);
+    }
+
+    if (comp(*(last - 1), *first))
+    {
+        std::iter_swap(first, last - 1);
+    }
+
+    if (comp(*(last - 1), *mid))
+    {
+        std::iter_swap(mid, last - 1);
+    }
 
     auto pivot = *mid;
-    RandomIt i = first; RandomIt j = last-1;
-    while (true) {
-        while (comp(*i, pivot)) ++i;
-        while (comp(pivot, *j)) --j;
-        if (i >= j) break;
+    RandomIt i = first; RandomIt j = last - 1;
+    while (true)
+    {
+        while (comp(*i, pivot))
+        {
+            ++i;
+        }
+
+        while (comp(pivot, *j))
+        {
+            --j;
+        }
+
+        if (i >= j)
+        {
+            break;
+        }
+
         std::iter_swap(i, j);
         ++i; --j;
     }
