@@ -129,7 +129,7 @@ ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value, Compare c
 template<typename ForwardIt, typename T>
 ForwardIt lower_bound(ForwardIt first, ForwardIt last, const T& value)
 {
-    return lower_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
+    return mib::lower_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
 template<typename ForwardIt, typename T, typename Compare>
@@ -161,7 +161,7 @@ ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value, Compare c
 template<typename ForwardIt, typename T>
 ForwardIt upper_bound(ForwardIt first, ForwardIt last, const T& value)
 {
-    return upper_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
+    return mib::upper_bound(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
 template<typename ForwardIt, typename T, typename Compare>
@@ -174,7 +174,7 @@ bool binary_search(ForwardIt first, ForwardIt last, const T& value, Compare comp
 template<typename ForwardIt, typename T>
 bool binary_search(ForwardIt first, ForwardIt last, const T& value)
 {
-    return binary_search(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
+    return mib::binary_search(first, last, value, std::less<typename std::iterator_traits<ForwardIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
@@ -204,7 +204,7 @@ void push_heap(RandomIt first, RandomIt last, Compare comp)
 template<typename RandomIt>
 void push_heap(RandomIt first, RandomIt last)
 {
-    push_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
+    mib::push_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
@@ -249,7 +249,7 @@ void pop_heap(RandomIt first, RandomIt last, Compare comp)
 template<typename RandomIt>
 void pop_heap(RandomIt first, RandomIt last)
 {
-    pop_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
+    mib::pop_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt, typename Compare>
@@ -300,7 +300,7 @@ void make_heap(RandomIt first, RandomIt last, Compare comp)
 template<typename RandomIt>
 void make_heap(RandomIt first, RandomIt last)
 {
-    make_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
+    mib::make_heap(first, last, std::less<typename std::iterator_traits<RandomIt>::value_type>());
 }
 
 template<typename RandomIt>
