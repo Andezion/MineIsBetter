@@ -3,8 +3,8 @@
 #include <iterator>
 #include <functional>
 
-namespace mib {
-
+namespace mib
+{
 template<typename T>
 void iter_swap(T a, T b)
 {
